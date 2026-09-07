@@ -1,12 +1,12 @@
-import type { Core } from "@strapi/strapi";
+import type { Core } from '@strapi/strapi';
 
-import { PLUGIN_ID } from "./constants";
+import { PLUGIN_ID } from './constants';
 
 const register = ({ strapi }: { strapi: Core.Strapi }) => {
-  const relationLabels = strapi.plugin(PLUGIN_ID).service("relation-labels");
-  const controllers = strapi.get("controllers");
+  const relationLabels = strapi.plugin(PLUGIN_ID).service('relation-labels');
+  const controllers = strapi.get('controllers');
 
-  controllers.extend("plugin::content-manager.relations", (controller: any) => ({
+  controllers.extend('plugin::content-manager.relations', (controller: any) => ({
     ...controller,
     async findAvailable(ctx: any, next: any) {
       await controller.findAvailable(ctx, next);
@@ -15,7 +15,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
           ctx,
           ctx.params.model,
           ctx.params.targetField,
-          ctx.body.results,
+          ctx.body.results
         );
       }
     },
@@ -26,13 +26,13 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
           ctx,
           ctx.params.model,
           ctx.params.targetField,
-          ctx.body.results,
+          ctx.body.results
         );
       }
     },
   }));
 
-  controllers.extend("plugin::content-manager.collection-types", (controller: any) => ({
+  controllers.extend('plugin::content-manager.collection-types', (controller: any) => ({
     ...controller,
     async find(ctx: any, next: any) {
       await controller.find(ctx, next);
@@ -40,7 +40,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
         ctx.body.results = await relationLabels.decorateCollectionResults(
           ctx,
           ctx.params.model,
-          ctx.body.results,
+          ctx.body.results
         );
       }
     },
@@ -52,7 +52,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
     }
   };
 
-  controllers.extend("plugin::content-manager.content-types", (controller: any) => ({
+  controllers.extend('plugin::content-manager.content-types', (controller: any) => ({
     ...controller,
     async findContentTypeConfiguration(ctx: any, next: any) {
       await controller.findContentTypeConfiguration(ctx, next);
@@ -64,7 +64,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
     },
   }));
 
-  controllers.extend("plugin::content-manager.components", (controller: any) => ({
+  controllers.extend('plugin::content-manager.components', (controller: any) => ({
     ...controller,
     async findComponentConfiguration(ctx: any, next: any) {
       await controller.findComponentConfiguration(ctx, next);

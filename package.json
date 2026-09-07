@@ -29,7 +29,9 @@
     "verify": "strapi-plugin verify",
     "test": "vitest run",
     "test:ts:front": "tsc -p admin/tsconfig.json",
-    "test:ts:back": "tsc -p server/tsconfig.json"
+    "test:ts:back": "tsc -p server/tsconfig.json",
+    "lint": "oxlint",
+    "fmt": "oxfmt"
   },
   "devDependencies": {
     "@strapi/design-system": "^2.2.4",
@@ -39,7 +41,9 @@
     "@strapi/typescript-utils": "^5.52.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "prettier": "^3.9.6",
+    "lefthook": "^2.1.12",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intl": "^6.8.9",

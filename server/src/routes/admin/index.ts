@@ -1,20 +1,20 @@
 export default () => ({
-  type: "admin",
+  type: 'admin',
   routes: [
     {
-      method: "GET",
-      path: "/settings",
-      handler: "settings.find",
+      method: 'GET',
+      path: '/settings',
+      handler: 'settings.find',
       config: {
-        policies: ["admin::isAuthenticatedAdmin"],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
-      method: "PUT",
-      path: "/settings",
-      handler: "settings.update",
+      method: 'PUT',
+      path: '/settings',
+      handler: 'settings.update',
       config: {
-        policies: ["admin::isAuthenticatedAdmin"],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
   ],

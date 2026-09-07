@@ -1,6 +1,6 @@
-import type { Core } from "@strapi/strapi";
+import type { Core } from '@strapi/strapi';
 
-import type { RelationNamesSettings } from "../types";
+import type { RelationNamesSettings } from '../types';
 
 type SchemaAttribute = {
   type?: string;
@@ -30,23 +30,23 @@ type RelationRuntime = CompiledTemplate & {
 };
 
 const SCALAR_TYPES = new Set([
-  "string",
-  "text",
-  "email",
-  "uid",
-  "enumeration",
-  "integer",
-  "biginteger",
-  "decimal",
-  "float",
-  "date",
-  "datetime",
-  "time",
-  "boolean",
+  'string',
+  'text',
+  'email',
+  'uid',
+  'enumeration',
+  'integer',
+  'biginteger',
+  'decimal',
+  'float',
+  'date',
+  'datetime',
+  'time',
+  'boolean',
 ]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const parseTemplate = (template: string): string[] | null => {
   if (!template.trim()) {
@@ -57,8 +57,8 @@ const parseTemplate = (template: string): string[] | null => {
   let cursor = 0;
 
   while (cursor < template.length) {
-    const openingBrace = template.indexOf("{", cursor);
-    const closingBrace = template.indexOf("}", cursor);
+    const openingBrace = template.indexOf('{', cursor);
+    const closingBrace = template.indexOf('}', cursor);
 
     if (closingBrace !== -1 && (openingBrace === -1 || closingBrace < openingBrace)) {
       return null;
@@ -68,7 +68,7 @@ const parseTemplate = (template: string): string[] | null => {
       break;
     }
 
-    const end = template.indexOf("}", openingBrace + 1);
+    const end = template.indexOf('}', openingBrace + 1);
     if (end === -1) {
       return null;
     }
@@ -87,7 +87,7 @@ const parseTemplate = (template: string): string[] | null => {
 
 const compileTemplate = (
   template: string,
-  targetSchema: SchemaLike | undefined,
+  targetSchema: SchemaLike | undefined
 ): CompiledTemplate | null => {
   const placeholders = parseTemplate(template);
   const attributes = targetSchema?.attributes ?? {};
@@ -98,7 +98,9 @@ const compileTemplate = (
 
   const valid = placeholders.every((name) => {
     const attribute = attributes[name];
-    return Boolean(attribute && attribute.private !== true && SCALAR_TYPES.has(attribute.type ?? ""));
+    return Boolean(
+      attribute && attribute.private !== true && SCALAR_TYPES.has(attribute.type ?? '')
+    );
   });
 
   if (!valid) {
@@ -112,14 +114,14 @@ const compileTemplate = (
   };
 };
 
-const renderTemplate = (
-  compiled: CompiledTemplate,
-  values: Record<string, unknown>,
-): string => {
-  const rendered = compiled.template.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (_match, name: string) => {
-    const value = values[name];
-    return value === null || value === undefined ? "" : String(value);
-  });
+const renderTemplate = (compiled: CompiledTemplate, values: Record<string, unknown>): string => {
+  const rendered = compiled.template.replace(
+    /\{([A-Za-z_][A-Za-z0-9_]*)\}/g,
+    (_match, name: string) => {
+      const value = values[name];
+      return value === null || value === undefined ? '' : String(value);
+    }
+  );
 
   return rendered.trim();
 };
@@ -129,31 +131,35 @@ const getOriginalMainField = async (
   sourceSchema: SchemaLike,
   targetSchema: SchemaLike,
   targetField: string,
-  userAbility: unknown,
+  userAbility: unknown
 ): Promise<string> => {
-  const serviceName = sourceSchema.modelType === "component" ? "components" : "content-types";
+  const serviceName = sourceSchema.modelType === 'component' ? 'components' : 'content-types';
   const configuration = await strapi
-    .plugin("content-manager")
+    .plugin('content-manager')
     .service(serviceName)
     .findConfiguration(sourceSchema);
   const configuredMainField = configuration?.metadatas?.[targetField]?.edit?.mainField;
 
   if (
-    typeof configuredMainField !== "string" ||
-    configuredMainField === "documentId" ||
-    configuredMainField === "id"
+    typeof configuredMainField !== 'string' ||
+    configuredMainField === 'documentId' ||
+    configuredMainField === 'id'
   ) {
-    return configuredMainField === "documentId" ? "documentId" : "id";
+    return configuredMainField === 'documentId' ? 'documentId' : 'id';
   }
 
   const permissionChecker = strapi
-    .plugin("content-manager")
-    .service("permission-checker")
+    .plugin('content-manager')
+    .service('permission-checker')
     .create({ userAbility, model: targetSchema.uid });
 
   const attribute = targetSchema.attributes?.[configuredMainField];
-  if (!attribute || attribute.private === true || permissionChecker.cannot.read(null, configuredMainField)) {
-    return "documentId";
+  if (
+    !attribute ||
+    attribute.private === true ||
+    permissionChecker.cannot.read(null, configuredMainField)
+  ) {
+    return 'documentId';
   }
 
   return configuredMainField;
@@ -164,18 +170,20 @@ const getRuntime = async (
   settings: RelationNamesSettings,
   sourceUid: string,
   targetField: string,
-  userAbility: unknown,
+  userAbility: unknown
 ): Promise<RelationRuntime | null> => {
   const sourceSchema = strapi.getModel(sourceUid as never) as unknown as SchemaLike | undefined;
   const attribute = sourceSchema?.attributes?.[targetField];
 
-  if (!sourceSchema || !attribute || attribute.type !== "relation" || !attribute.target) {
+  if (!sourceSchema || !attribute || attribute.type !== 'relation' || !attribute.target) {
     return null;
   }
 
   const template = settings.relations[sourceUid]?.[targetField];
-  const targetSchema = strapi.getModel(attribute.target as never) as unknown as SchemaLike | undefined;
-  const compiled = typeof template === "string" ? compileTemplate(template, targetSchema) : null;
+  const targetSchema = strapi.getModel(attribute.target as never) as unknown as
+    | SchemaLike
+    | undefined;
+  const compiled = typeof template === 'string' ? compileTemplate(template, targetSchema) : null;
 
   if (!compiled || !targetSchema) {
     return null;
@@ -190,18 +198,18 @@ const getRuntime = async (
       sourceSchema,
       targetSchema,
       targetField,
-      userAbility,
+      userAbility
     ),
   };
 };
 
 const getIdentity = (value: Record<string, unknown>, modelType?: string): unknown =>
-  modelType === "component" ? value.id : value.documentId ?? value.id;
+  modelType === 'component' ? value.id : (value.documentId ?? value.id);
 
 const matchesRelation = (
   source: Record<string, unknown>,
   candidate: Record<string, unknown>,
-  targetModelType?: string,
+  targetModelType?: string
 ): boolean => {
   if (source.id !== undefined && candidate.id === source.id) {
     return true;
@@ -224,12 +232,12 @@ const hydrateValues = async (
   strapi: Core.Strapi,
   ctx: any,
   runtime: RelationRuntime,
-  values: Record<string, unknown>[],
+  values: Record<string, unknown>[]
 ): Promise<Map<Record<string, unknown>, Record<string, unknown>>> => {
   const targetSchema = strapi.getModel(runtime.targetUid as never) as unknown as SchemaLike;
   const targetModelType = targetSchema.modelType;
   const missingFields = runtime.placeholders.filter((field) =>
-    values.some((value) => !Object.prototype.hasOwnProperty.call(value, field)),
+    values.some((value) => !Object.prototype.hasOwnProperty.call(value, field))
   );
 
   if (missingFields.length === 0) {
@@ -246,25 +254,35 @@ const hydrateValues = async (
 
   try {
     const permissionChecker = strapi
-      .plugin("content-manager")
-      .service("permission-checker")
+      .plugin('content-manager')
+      .service('permission-checker')
       .create({ userAbility: ctx.state.userAbility, model: runtime.targetUid });
     const fields = Array.from(
-      new Set([...runtime.placeholders, runtime.originalMainField, "id", "documentId", "locale", "publishedAt"]),
+      new Set([
+        ...runtime.placeholders,
+        runtime.originalMainField,
+        'id',
+        'documentId',
+        'locale',
+        'publishedAt',
+      ])
     );
-    const identityField = targetModelType === "component" ? "id" : "documentId";
+    const identityField = targetModelType === 'component' ? 'id' : 'documentId';
     const permissionQuery = await permissionChecker.sanitizedQuery.read({
       fields,
       filters: { [identityField]: { $in: identities } },
     });
-    const query = strapi.get("query-params").transform(runtime.targetUid, permissionQuery);
-    const hydrated = (await strapi.db.query(runtime.targetUid).findMany(query)) as Record<string, unknown>[];
+    const query = strapi.get('query-params').transform(runtime.targetUid, permissionQuery);
+    const hydrated = (await strapi.db.query(runtime.targetUid).findMany(query)) as Record<
+      string,
+      unknown
+    >[];
 
     return new Map(
       values.map((value) => [
         value,
         hydrated.find((candidate) => matchesRelation(value, candidate, targetModelType)) ?? value,
-      ]),
+      ])
     );
   } catch {
     return new Map(values.map((value) => [value, value]));
@@ -274,7 +292,7 @@ const hydrateValues = async (
 const applyLabel = (
   value: Record<string, unknown>,
   hydrated: Record<string, unknown>,
-  runtime: RelationRuntime,
+  runtime: RelationRuntime
 ): Record<string, unknown> => {
   const label = renderTemplate(runtime, hydrated);
 
@@ -286,7 +304,8 @@ const applyLabel = (
     return value;
   }
 
-  const fallbackField = runtime.originalMainField === "id" ? "documentId" : runtime.originalMainField;
+  const fallbackField =
+    runtime.originalMainField === 'id' ? 'documentId' : runtime.originalMainField;
   const fallback = Object.prototype.hasOwnProperty.call(hydrated, fallbackField)
     ? hydrated[fallbackField]
     : undefined;
@@ -305,22 +324,28 @@ const replaceRelationValue = (
   original: unknown,
   values: Record<string, unknown>[],
   hydrated: Map<Record<string, unknown>, Record<string, unknown>>,
-  runtime: RelationRuntime,
+  runtime: RelationRuntime
 ): unknown => {
   const decorated = values.map((value) => applyLabel(value, hydrated.get(value) ?? value, runtime));
-  return Array.isArray(original) ? decorated : decorated[0] ?? original;
+  return Array.isArray(original) ? decorated : (decorated[0] ?? original);
 };
 
 const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
-  const getSettings = () => strapi.plugin("strapi-relation-names").service("settings").get();
+  const getSettings = () => strapi.plugin('strapi-relation-names').service('settings').get();
 
   const decorateRelationResults = async (
     ctx: any,
     sourceUid: string,
     targetField: string,
-    results: unknown[],
+    results: unknown[]
   ): Promise<unknown[]> => {
-    const runtime = await getRuntime(strapi, await getSettings(), sourceUid, targetField, ctx.state.userAbility);
+    const runtime = await getRuntime(
+      strapi,
+      await getSettings(),
+      sourceUid,
+      targetField,
+      ctx.state.userAbility
+    );
     if (!runtime) {
       return results;
     }
@@ -328,7 +353,7 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
     const values = results.filter(isRecord);
     const hydrated = await hydrateValues(strapi, ctx, runtime, values);
     return results.map((result) =>
-      isRecord(result) ? applyLabel(result, hydrated.get(result) ?? result, runtime) : result,
+      isRecord(result) ? applyLabel(result, hydrated.get(result) ?? result, runtime) : result
     );
   };
 
@@ -344,20 +369,31 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
     for (const [fieldName, metadata] of Object.entries(metadatas)) {
       const sourceSchema = strapi.getModel(sourceUid as never) as unknown as SchemaLike | undefined;
       const attribute = sourceSchema?.attributes?.[fieldName];
-      if (!attribute || attribute.type !== "relation" || !attribute.target) {
+      if (!attribute || attribute.type !== 'relation' || !attribute.target) {
         continue;
       }
 
-      const targetSchema = strapi.getModel(attribute.target as never) as unknown as SchemaLike | undefined;
-      const compiled = compileTemplate(settings.relations[sourceUid]?.[fieldName] ?? "", targetSchema);
+      const targetSchema = strapi.getModel(attribute.target as never) as unknown as
+        | SchemaLike
+        | undefined;
+      const compiled = compileTemplate(
+        settings.relations[sourceUid]?.[fieldName] ?? '',
+        targetSchema
+      );
       if (!compiled || !isRecord(metadata)) {
         continue;
       }
 
       metadatas[fieldName] = {
         ...metadata,
-        edit: { ...(isRecord(metadata.edit) ? metadata.edit : {}), mainField: compiled.displayField },
-        list: { ...(isRecord(metadata.list) ? metadata.list : {}), mainField: compiled.displayField },
+        edit: {
+          ...(isRecord(metadata.edit) ? metadata.edit : {}),
+          mainField: compiled.displayField,
+        },
+        list: {
+          ...(isRecord(metadata.list) ? metadata.list : {}),
+          mainField: compiled.displayField,
+        },
       };
       relationNames[fieldName] = { mainField: compiled.displayField };
     }
@@ -419,12 +455,12 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
 
       const schema = getSchema(uid);
       for (const [fieldName, attribute] of Object.entries(schema?.attributes ?? {})) {
-        if (attribute.type === "relation" && attribute.target) {
+        if (attribute.type === 'relation' && attribute.target) {
           const cacheKey = `${uid}:${fieldName}`;
           if (!runtimeCache.has(cacheKey)) {
             runtimeCache.set(
               cacheKey,
-              await getRuntime(strapi, settings, uid, fieldName, ctx.state.userAbility),
+              await getRuntime(strapi, settings, uid, fieldName, ctx.state.userAbility)
             );
           }
           const runtime = runtimeCache.get(cacheKey);
@@ -432,17 +468,25 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
             const originalRelation = value[fieldName];
             const relationItems = relationValues(originalRelation);
             const hydrated = await hydrateValues(strapi, ctx, runtime, relationItems);
-            value[fieldName] = replaceRelationValue(originalRelation, relationItems, hydrated, runtime);
+            value[fieldName] = replaceRelationValue(
+              originalRelation,
+              relationItems,
+              hydrated,
+              runtime
+            );
           }
         }
 
-        if (attribute.type === "component" && attribute.component) {
+        if (attribute.type === 'component' && attribute.component) {
           await visit(value[fieldName], attribute.component);
         }
 
-        if (attribute.type === "dynamiczone" && Array.isArray(attribute.components)) {
+        if (attribute.type === 'dynamiczone' && Array.isArray(attribute.components)) {
           for (const item of relationValues(value[fieldName])) {
-            if (typeof item.__component === "string" && attribute.components.includes(item.__component)) {
+            if (
+              typeof item.__component === 'string' &&
+              attribute.components.includes(item.__component)
+            ) {
               await visit(item, item.__component);
             }
           }

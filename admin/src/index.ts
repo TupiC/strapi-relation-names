@@ -1,19 +1,20 @@
-import { getTranslation } from "./utils/getTranslation";
-import { mutateEditLayout, mutateListHeaders } from "./utils/layout";
-import { PLUGIN_ID } from "./pluginId";
+import { getTranslation } from './utils/getTranslation';
+import { mutateEditLayout, mutateListHeaders } from './utils/layout';
+import { PLUGIN_ID } from './pluginId';
 
-import type { StrapiApp } from "@strapi/strapi/admin";
+import type { StrapiApp } from '@strapi/strapi/admin';
 
-const plugin: StrapiApp["appPlugins"][string] = {
+const plugin: StrapiApp['appPlugins'][string] = {
   register(app) {
-    app.addSettingsLink("global", {
+    app.addSettingsLink('global', {
       id: PLUGIN_ID,
       to: PLUGIN_ID,
       intlLabel: {
         id: `${PLUGIN_ID}.plugin.name`,
-        defaultMessage: "Relation Names",
+        defaultMessage: 'Relation Names',
       },
-      Component: () => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })),
+      Component: () =>
+        import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
       permissions: [],
     });
 
@@ -25,17 +26,15 @@ const plugin: StrapiApp["appPlugins"][string] = {
   },
 
   bootstrap({ registerHook }) {
-    registerHook("Admin/CM/pages/EditView/mutate-edit-view-layout", mutateEditLayout);
-    registerHook("Admin/CM/pages/ListView/inject-column-in-table", mutateListHeaders);
+    registerHook('Admin/CM/pages/EditView/mutate-edit-view-layout', mutateEditLayout);
+    registerHook('Admin/CM/pages/ListView/inject-column-in-table', mutateListHeaders);
   },
 
   registerTrads({ locales }) {
     return Promise.all(
       locales.map(async (locale) => {
         try {
-          const { default: data } = (await import(
-            `./translations/${locale}.json`
-          )) as {
+          const { default: data } = (await import(`./translations/${locale}.json`)) as {
             default: Record<string, string>;
           };
 
@@ -50,7 +49,7 @@ const plugin: StrapiApp["appPlugins"][string] = {
         } catch {
           return { data: {}, locale };
         }
-      }),
+      })
     );
   },
 };

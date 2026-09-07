@@ -1,7 +1,7 @@
-import relationLabels from "./relation-labels";
-import settings from "./settings";
+import relationLabels from './relation-labels';
+import settings from './settings';
 
 export default {
-  "relation-labels": relationLabels,
+  'relation-labels': relationLabels,
   settings,
 };

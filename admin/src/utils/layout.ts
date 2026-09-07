@@ -7,7 +7,7 @@ type RelationNamesLayout = {
 };
 
 const isRecord = (value: unknown): value is Record<string, any> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const getMainFieldName = (layout: RelationNamesLayout, fieldName: string) =>
   layout.settings?.relationNames?.[fieldName]?.mainField;
@@ -22,7 +22,7 @@ const mutateFields = (fields: unknown, layout: RelationNamesLayout): unknown => 
       return field;
     }
 
-    const mainField = getMainFieldName(layout, typeof field.name === "string" ? field.name : "");
+    const mainField = getMainFieldName(layout, typeof field.name === 'string' ? field.name : '');
     if (!mainField || !isRecord(field.mainField)) {
       return field;
     }
@@ -39,7 +39,7 @@ const mutateEditLayoutObject = (layout: RelationNamesLayout): RelationNamesLayou
     Object.entries(layout.components ?? {}).map(([uid, componentLayout]) => [
       uid,
       mutateEditLayoutObject(componentLayout),
-    ]),
+    ])
   );
 
   return {
@@ -80,7 +80,10 @@ const mutateListHeaders = (payload: unknown): unknown => {
         return header;
       }
 
-      const mainField = getMainFieldName(layout, typeof header.name === "string" ? header.name : "");
+      const mainField = getMainFieldName(
+        layout,
+        typeof header.name === 'string' ? header.name : ''
+      );
       return mainField
         ? { ...header, mainField: { ...header.mainField, name: mainField } }
         : header;

@@ -1,8 +1,8 @@
-import contentAPIRoutes from "./content-api";
-import adminAPIRoutes from "./admin";
+import contentAPIRoutes from './content-api';
+import adminAPIRoutes from './admin';
 
 const routes = {
-  "content-api": contentAPIRoutes,
+  'content-api': contentAPIRoutes,
   admin: adminAPIRoutes,
 };
 

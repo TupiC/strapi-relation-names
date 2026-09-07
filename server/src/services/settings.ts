@@ -1,20 +1,20 @@
-import type { Core } from "@strapi/strapi";
+import type { Core } from '@strapi/strapi';
 
-import { EMPTY_SETTINGS } from "../types";
-import type { RelationNamesSettings } from "../types";
+import { EMPTY_SETTINGS } from '../types';
+import type { RelationNamesSettings } from '../types';
 
-const PLUGIN_ID = "strapi-relation-names";
-const STORE_KEY = "settings";
+const PLUGIN_ID = 'strapi-relation-names';
+const STORE_KEY = 'settings';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const normalizeSettings = (value: unknown): RelationNamesSettings => {
   if (!isRecord(value) || !isRecord(value.relations)) {
     return { relations: {} };
   }
 
-  const relations: RelationNamesSettings["relations"] = {};
+  const relations: RelationNamesSettings['relations'] = {};
 
   for (const [sourceUid, sourceRelations] of Object.entries(value.relations)) {
     if (!isRecord(sourceRelations)) {
@@ -24,7 +24,7 @@ const normalizeSettings = (value: unknown): RelationNamesSettings => {
     const normalizedRelations: Record<string, string> = {};
 
     for (const [fieldName, template] of Object.entries(sourceRelations)) {
-      if (typeof template === "string" && template.length > 0) {
+      if (typeof template === 'string' && template.length > 0) {
         normalizedRelations[fieldName] = template;
       }
     }
@@ -40,7 +40,7 @@ const normalizeSettings = (value: unknown): RelationNamesSettings => {
 const settings = ({ strapi }: { strapi: Core.Strapi }) => {
   const store = () =>
     strapi.store({
-      type: "plugin",
+      type: 'plugin',
       name: PLUGIN_ID,
       key: STORE_KEY,
     });

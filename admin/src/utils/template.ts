@@ -1,17 +1,17 @@
 const FIELD_TYPES = new Set([
-  "string",
-  "text",
-  "email",
-  "uid",
-  "enumeration",
-  "integer",
-  "biginteger",
-  "decimal",
-  "float",
-  "date",
-  "datetime",
-  "time",
-  "boolean",
+  'string',
+  'text',
+  'email',
+  'uid',
+  'enumeration',
+  'integer',
+  'biginteger',
+  'decimal',
+  'float',
+  'date',
+  'datetime',
+  'time',
+  'boolean',
 ]);
 
 const getPlaceholders = (template: string): string[] | null => {
@@ -24,7 +24,7 @@ const getPlaceholders = (template: string): string[] | null => {
   let cursor = 0;
 
   for (const match of matches) {
-    if (match.index !== cursor && template.slice(cursor, match.index).includes("{")) {
+    if (match.index !== cursor && template.slice(cursor, match.index).includes('{')) {
       return null;
     }
 
@@ -37,7 +37,7 @@ const getPlaceholders = (template: string): string[] | null => {
     cursor = match.index + match[0].length;
   }
 
-  if (template.slice(cursor).includes("{") || template.slice(cursor).includes("}")) {
+  if (template.slice(cursor).includes('{') || template.slice(cursor).includes('}')) {
     return null;
   }
 
@@ -46,14 +46,16 @@ const getPlaceholders = (template: string): string[] | null => {
 
 const validateTemplate = (
   template: string,
-  attributes: Record<string, { type?: string }> | undefined,
+  attributes: Record<string, { type?: string }> | undefined
 ): string | null => {
   const placeholders = getPlaceholders(template);
   if (!placeholders) {
-    return "Use at least one valid {fieldName} placeholder.";
+    return 'Use at least one valid {fieldName} placeholder.';
   }
 
-  const invalidField = placeholders.find((field) => !FIELD_TYPES.has(attributes?.[field]?.type ?? ""));
+  const invalidField = placeholders.find(
+    (field) => !FIELD_TYPES.has(attributes?.[field]?.type ?? '')
+  );
   return invalidField ? `“${invalidField}” is not an available scalar field.` : null;
 };
 
