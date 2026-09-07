@@ -1,0 +1,47 @@
+{
+  "name": "playground",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "predev": "npm rebuild better-sqlite3 --ignore-scripts=false",
+    "develop": "strapi develop",
+    "seed:example": "node ./scripts/seed.js",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+  },
+  "dependencies": {
+    "@strapi/database": "5.52.3",
+    "@strapi/plugin-cloud": "5.52.3",
+    "@strapi/plugin-users-permissions": "5.52.3",
+    "@strapi/strapi": "5.52.3",
+    "better-sqlite3": "12.8.0",
+    "fs-extra": "^10.0.0",
+    "mime-types": "^2.1.27",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.30.3",
+    "strapi-relation-names": "file:.yalc/strapi-relation-names",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.0.0 <=26.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "9a56ba26-071e-4043-b962-aa8eeb9734c5",
+    "installId": "faeb2c495e627fd135f2851b64b2b58696eb56f5f3ab8742858726b03546f9d3"
+  }
+}

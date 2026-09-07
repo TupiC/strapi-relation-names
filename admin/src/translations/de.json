@@ -1,0 +1,13 @@
+{
+  "plugin.name": "Relationsnamen",
+  "settings.title": "Relationsnamen",
+  "settings.description": "Legen Sie fest, wie verknüpfte Einträge im Content Manager angezeigt werden. Verwenden Sie ein oder mehrere skalare Felder des verknüpften Inhaltstyps, zum Beispiel Vor- und Nachname.",
+  "settings.target": "Verknüpfter Inhalt: {target}",
+  "settings.template": "Bezeichnungsvorlage",
+  "settings.availableFields": "Verfügbare Felder",
+  "settings.save": "Einstellungen speichern",
+  "settings.loading": "Relationsfelder werden geladen…",
+  "settings.noRelations": "Keine Relationsfelder verfügbar.",
+  "settings.loadError": "Die Einstellungen für Relationsnamen konnten nicht geladen werden.",
+  "settings.saveError": "Die Einstellungen für Relationsnamen konnten nicht gespeichert werden."
+}

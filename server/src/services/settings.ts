@@ -1,0 +1,63 @@
+import type { Core } from "@strapi/strapi";
+
+import { EMPTY_SETTINGS } from "../types";
+import type { RelationNamesSettings } from "../types";
+
+const PLUGIN_ID = "strapi-relation-names";
+const STORE_KEY = "settings";
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const normalizeSettings = (value: unknown): RelationNamesSettings => {
+  if (!isRecord(value) || !isRecord(value.relations)) {
+    return { relations: {} };
+  }
+
+  const relations: RelationNamesSettings["relations"] = {};
+
+  for (const [sourceUid, sourceRelations] of Object.entries(value.relations)) {
+    if (!isRecord(sourceRelations)) {
+      continue;
+    }
+
+    const normalizedRelations: Record<string, string> = {};
+
+    for (const [fieldName, template] of Object.entries(sourceRelations)) {
+      if (typeof template === "string" && template.length > 0) {
+        normalizedRelations[fieldName] = template;
+      }
+    }
+
+    if (Object.keys(normalizedRelations).length > 0) {
+      relations[sourceUid] = normalizedRelations;
+    }
+  }
+
+  return { relations };
+};
+
+const settings = ({ strapi }: { strapi: Core.Strapi }) => {
+  const store = () =>
+    strapi.store({
+      type: "plugin",
+      name: PLUGIN_ID,
+      key: STORE_KEY,
+    });
+
+  return {
+    async get(): Promise<RelationNamesSettings> {
+      const value = await store().get();
+      return normalizeSettings(value ?? EMPTY_SETTINGS);
+    },
+
+    async set(value: unknown): Promise<RelationNamesSettings> {
+      const normalized = normalizeSettings(value);
+      await store().set({ value: normalized });
+      return normalized;
+    },
+  };
+};
+
+export { normalizeSettings };
+export default settings;

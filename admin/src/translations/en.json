@@ -1,0 +1,13 @@
+{
+  "plugin.name": "Relation Names",
+  "settings.title": "Relation Names",
+  "settings.description": "Choose how related entries are displayed in the Content Manager. Use one or more scalar fields from the related content type, such as a first and last name.",
+  "settings.target": "Related content: {target}",
+  "settings.template": "Label template",
+  "settings.availableFields": "Available fields",
+  "settings.save": "Save settings",
+  "settings.loading": "Loading relation fields…",
+  "settings.noRelations": "No relation fields are available.",
+  "settings.loadError": "Relation Names settings could not be loaded.",
+  "settings.saveError": "Relation Names settings could not be saved."
+}
