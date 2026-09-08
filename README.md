@@ -1,25 +1,171 @@
-# strapi-relation-names
+# 🔗 strapi-relation-names
 
-Display Strapi relations with clear, customizable labels built from your content fields.
+**Clear and customizable relation labels for Strapi v5**
 
-## Strapi 5
+Display Strapi relations using readable labels built from your content fields instead of relying on the default relation name.
 
-`strapi-relation-names` is an Admin-only Strapi 5 plugin. It does not add Content API routes and does not change stored entries or public API responses.
+[![npm version](https://img.shields.io/npm/v/strapi-relation-names)](https://www.npmjs.com/package/strapi-relation-names)
+![Strapi Version](https://img.shields.io/badge/strapi-v5-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![npm](https://img.shields.io/npm/dt/strapi-relation-names)
 
-## Configuration
+---
 
-Open **Settings → Global → Relation Names**. Each relation field is listed with the scalar fields available on its related content type or component.
+## ✨ Features
 
-Templates use direct field placeholders:
+- 🏷️ **Custom relation labels**
+- 🧩 Combine multiple fields in a single label
+- ✏️ Add static text around field values
+- 🔁 Supports repeated placeholders
+- 📦 Supports scalar fields such as strings, numbers, booleans, and dates
+- 🛡️ Falls back to Strapi's default relation label when necessary
+- 🔎 Keeps Strapi's existing relation search and sorting behavior
+- 🖥️ Admin-only — no changes to your Content API or stored data
+
+---
+
+## 🚀 Installation
+
+Install via npm:
+
+```bash
+npm install strapi-relation-names
+```
+
+or yarn:
+
+```bash
+yarn add strapi-relation-names
+```
+
+or pnpm:
+
+```bash
+pnpm add strapi-relation-names
+```
+
+Enable the plugin:
+
+```javascript
+// config/plugins.{js,ts}
+'strapi-relation-names': {
+  enabled: true,
+},
+```
+
+---
+
+## Quickstart
+
+After installing and enabling the plugin, open the Strapi Admin settings panel:
+
+**Settings → Global → Relation Names**
+
+Each relation field is displayed together with the scalar fields available on its related content type or component.
+
+Create a label using placeholders:
 
 ```text
 {firstName} {lastName}
 ```
 
-Multiple and repeated placeholders, static text, numbers, booleans, dates, and other scalar fields are supported. Nested paths, expressions, relations, components, media, JSON, rich text, and dynamic zones are not supported.
+For example, given:
 
-The first placeholder is used internally by the Admin relation renderer. Strapi's existing relation search and sorting continue to use the configured default main field.
+```text
+firstName = John
+lastName = Doe
+```
 
-Missing values are replaced with an empty string. If the complete rendered label is blank, or if a template is missing or invalid, Strapi's default relation label is used.
+the relation will be displayed as:
 
-After saving settings, the Admin reloads so all open Content Manager views use the new labels.
+```text
+John Doe
+```
+
+You can also mix placeholders with static text:
+
+```text
+{firstName} {lastName} ({customerNumber})
+```
+
+After saving the settings, the Strapi Admin reloads automatically so open Content Manager views use the updated labels.
+
+---
+
+## ⚙️ Templates
+
+Templates use direct field placeholders:
+
+```text
+{fieldName}
+```
+
+Multiple placeholders can be combined:
+
+```text
+{firstName} {lastName}
+```
+
+Placeholders can also be repeated:
+
+```text
+{name} - {name}
+```
+
+Static text can be included anywhere:
+
+```text
+Customer: {firstName} {lastName}
+```
+
+---
+
+## 🗂️ How It Works
+
+The plugin changes how relations are displayed inside the Strapi Admin panel.
+
+The first placeholder in a template is used internally by Strapi's Admin relation renderer.
+
+Strapi's existing relation search and sorting continue to use the configured default main field.
+
+Missing field values are replaced with an empty string.
+
+For example:
+
+```text
+{firstName} {lastName}
+```
+
+with a missing `lastName` becomes:
+
+```text
+John
+```
+
+If the complete rendered label is blank, Strapi automatically falls back to its default relation label.
+
+The default label is also used when:
+
+- No template is configured
+- The configured template is invalid
+- The rendered template contains no usable value
+
+---
+
+## 🔮 Planned Features
+
+- [ ] Live label previews while editing templates
+- [ ] Define default relation templates in plugin configuration
+- [ ] Support nested field paths in templates
+- [ ] Import and export relation-label settings
+- [ ] Conditional labels and configurable fallback rules
+
+If you have any feature requests or suggestions, please open a dedicated issue.
+
+## 🛑 Problems
+
+If you encounter any issues, please feel free to open an issue on the [GitHub repo](https://github.com/TupiC/strapi-relation-names/issues/new).
+
+## 🛠️ Contributing
+
+Contributions are welcome! If you have suggestions or improvements, please open an issue or submit a pull request to the `dev` branch.
