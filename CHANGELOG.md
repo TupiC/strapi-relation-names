@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/TupiC/strapi-relation-names/compare/v1.1.0...v1.2.0) (2026-09-08)
+
+
+### Features
+
+* support nested relation fields in templates ([de4cfe6](https://github.com/TupiC/strapi-relation-names/commit/de4cfe6be92705ffc4a487fea37fb92537430f2d))
+
 ## [1.1.0](https://github.com/TupiC/strapi-relation-names/compare/v1.0.0...v1.1.0) (2026-09-08)
 
 ### Features
