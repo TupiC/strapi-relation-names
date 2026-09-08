@@ -28,7 +28,10 @@ const SettingsPage = () => {
   const { formatMessage } = useIntl();
   const { get, put } = useFetchClient();
   const [schemas, setSchemas] = useState<Schema[]>([]);
-  const [settings, setSettings] = useState<RelationNamesSettings>({ relations: {} });
+  const [settings, setSettings] = useState<RelationNamesSettings>({
+    collections: [],
+    relations: {},
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +45,13 @@ const SettingsPage = () => {
         get<InitResponse>('/content-manager/init'),
         get<SettingsResponse>(PLUGIN_SETTINGS_PATH),
       ]);
-      setSchemas([...initResponse.data.data.contentTypes, ...initResponse.data.data.components]);
-      setSettings(settingsResponse.data.data);
+      const nextSettings = settingsResponse.data.data;
+      const contentTypes = initResponse.data.data.contentTypes.filter(
+        (schema) =>
+          nextSettings.collections.length === 0 || nextSettings.collections.includes(schema.uid)
+      );
+      setSchemas([...contentTypes, ...initResponse.data.data.components]);
+      setSettings(nextSettings);
     } catch {
       setError(formatMessage({ id: getTranslation('settings.loadError') }));
     } finally {
@@ -98,7 +106,7 @@ const SettingsPage = () => {
       } else {
         relations[sourceUid] = sourceRelations;
       }
-      return { relations };
+      return { ...current, relations };
     });
   };
 

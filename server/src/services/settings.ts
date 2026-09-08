@@ -9,9 +9,9 @@ const STORE_KEY = 'settings';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
-const normalizeSettings = (value: unknown): RelationNamesSettings => {
+const normalizeSettings = (value: unknown, collections: string[] = []): RelationNamesSettings => {
   if (!isRecord(value) || !isRecord(value.relations)) {
-    return { relations: {} };
+    return { collections, relations: {} };
   }
 
   const relations: RelationNamesSettings['relations'] = {};
@@ -34,10 +34,22 @@ const normalizeSettings = (value: unknown): RelationNamesSettings => {
     }
   }
 
-  return { relations };
+  return { collections, relations };
 };
 
 const settings = ({ strapi }: { strapi: Core.Strapi }) => {
+  const getCollections = (): string[] => {
+    const config = strapi.config.get('plugin::strapi-relation-names') as
+      | { collections?: unknown }
+      | undefined;
+
+    return Array.isArray(config?.collections)
+      ? config.collections.filter(
+          (collection): collection is string => typeof collection === 'string'
+        )
+      : [];
+  };
+
   const store = () =>
     strapi.store({
       type: 'plugin',
@@ -48,11 +60,11 @@ const settings = ({ strapi }: { strapi: Core.Strapi }) => {
   return {
     async get(): Promise<RelationNamesSettings> {
       const value = await store().get();
-      return normalizeSettings(value ?? EMPTY_SETTINGS);
+      return normalizeSettings(value ?? EMPTY_SETTINGS, getCollections());
     },
 
     async set(value: unknown): Promise<RelationNamesSettings> {
-      const normalized = normalizeSettings(value);
+      const normalized = normalizeSettings(value, getCollections());
       await store().set({ value: normalized });
       return normalized;
     },

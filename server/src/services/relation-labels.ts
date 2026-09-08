@@ -2,129 +2,22 @@ import type { Core } from '@strapi/strapi';
 
 import type { RelationNamesSettings } from '../types';
 
-type SchemaAttribute = {
-  type?: string;
-  target?: string;
-  component?: string;
-  components?: string[];
-  relation?: string;
-  private?: boolean;
-};
-
-type SchemaLike = {
-  uid: string;
-  modelType?: string;
-  attributes?: Record<string, SchemaAttribute>;
-};
-
-type CompiledTemplate = {
-  template: string;
-  placeholders: string[];
-  displayField: string;
-};
-
-type RelationRuntime = CompiledTemplate & {
-  sourceUid: string;
-  targetUid: string;
-  originalMainField: string;
-};
-
-const SCALAR_TYPES = new Set([
-  'string',
-  'text',
-  'email',
-  'uid',
-  'enumeration',
-  'integer',
-  'biginteger',
-  'decimal',
-  'float',
-  'date',
-  'datetime',
-  'time',
-  'boolean',
-]);
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
-const parseTemplate = (template: string): string[] | null => {
-  if (!template.trim()) {
-    return null;
-  }
-
-  const placeholders: string[] = [];
-  let cursor = 0;
-
-  while (cursor < template.length) {
-    const openingBrace = template.indexOf('{', cursor);
-    const closingBrace = template.indexOf('}', cursor);
-
-    if (closingBrace !== -1 && (openingBrace === -1 || closingBrace < openingBrace)) {
-      return null;
-    }
-
-    if (openingBrace === -1) {
-      break;
-    }
-
-    const end = template.indexOf('}', openingBrace + 1);
-    if (end === -1) {
-      return null;
-    }
-
-    const name = template.slice(openingBrace + 1, end);
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
-      return null;
-    }
-
-    placeholders.push(name);
-    cursor = end + 1;
-  }
-
-  return placeholders.length > 0 ? placeholders : null;
-};
-
-const compileTemplate = (
-  template: string,
-  targetSchema: SchemaLike | undefined
-): CompiledTemplate | null => {
-  const placeholders = parseTemplate(template);
-  const attributes = targetSchema?.attributes ?? {};
-
-  if (!placeholders || !targetSchema) {
-    return null;
-  }
-
-  const valid = placeholders.every((name) => {
-    const attribute = attributes[name];
-    return Boolean(
-      attribute && attribute.private !== true && SCALAR_TYPES.has(attribute.type ?? '')
-    );
-  });
-
-  if (!valid) {
-    return null;
-  }
-
-  return {
-    template,
-    placeholders,
-    displayField: placeholders[0],
-  };
-};
-
-const renderTemplate = (compiled: CompiledTemplate, values: Record<string, unknown>): string => {
-  const rendered = compiled.template.replace(
-    /\{([A-Za-z_][A-Za-z0-9_]*)\}/g,
-    (_match, name: string) => {
-      const value = values[name];
-      return value === null || value === undefined ? '' : String(value);
-    }
-  );
-
-  return rendered.trim();
-};
+import {
+  compileTemplate,
+  isRecord,
+  parseTemplate,
+  renderTemplate,
+  type RelationRuntime,
+  type SchemaLike,
+} from './utils/relation-labels';
+import {
+  applyLabel,
+  getIdentity,
+  matchesRelation,
+  relationValues,
+  replaceRelationValue,
+} from './utils/relation-values';
+import { isCollectionEnabled } from './utils/collections';
 
 const getOriginalMainField = async (
   strapi: Core.Strapi,
@@ -203,31 +96,6 @@ const getRuntime = async (
   };
 };
 
-const getIdentity = (value: Record<string, unknown>, modelType?: string): unknown =>
-  modelType === 'component' ? value.id : (value.documentId ?? value.id);
-
-const matchesRelation = (
-  source: Record<string, unknown>,
-  candidate: Record<string, unknown>,
-  targetModelType?: string
-): boolean => {
-  if (source.id !== undefined && candidate.id === source.id) {
-    return true;
-  }
-
-  if (source.documentId !== undefined && candidate.documentId === source.documentId) {
-    if (source.locale !== undefined && candidate.locale !== source.locale) {
-      return false;
-    }
-    if (source.publishedAt !== undefined && candidate.publishedAt !== source.publishedAt) {
-      return false;
-    }
-    return true;
-  }
-
-  return getIdentity(source, targetModelType) === getIdentity(candidate, targetModelType);
-};
-
 const hydrateValues = async (
   strapi: Core.Strapi,
   ctx: any,
@@ -289,47 +157,6 @@ const hydrateValues = async (
   }
 };
 
-const applyLabel = (
-  value: Record<string, unknown>,
-  hydrated: Record<string, unknown>,
-  runtime: RelationRuntime
-): Record<string, unknown> => {
-  const label = renderTemplate(runtime, hydrated);
-
-  if (label) {
-    return { ...value, [runtime.displayField]: label };
-  }
-
-  if (runtime.displayField === runtime.originalMainField) {
-    return value;
-  }
-
-  const fallbackField =
-    runtime.originalMainField === 'id' ? 'documentId' : runtime.originalMainField;
-  const fallback = Object.prototype.hasOwnProperty.call(hydrated, fallbackField)
-    ? hydrated[fallbackField]
-    : undefined;
-
-  return { ...value, [runtime.displayField]: fallback };
-};
-
-const relationValues = (value: unknown): Record<string, unknown>[] => {
-  if (Array.isArray(value)) {
-    return value.filter(isRecord);
-  }
-  return isRecord(value) ? [value] : [];
-};
-
-const replaceRelationValue = (
-  original: unknown,
-  values: Record<string, unknown>[],
-  hydrated: Map<Record<string, unknown>, Record<string, unknown>>,
-  runtime: RelationRuntime
-): unknown => {
-  const decorated = values.map((value) => applyLabel(value, hydrated.get(value) ?? value, runtime));
-  return Array.isArray(original) ? decorated : (decorated[0] ?? original);
-};
-
 const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
   const getSettings = () => strapi.plugin('strapi-relation-names').service('settings').get();
 
@@ -339,9 +166,14 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
     targetField: string,
     results: unknown[]
   ): Promise<unknown[]> => {
+    const settings = await getSettings();
+    if (!isCollectionEnabled(settings.collections, sourceUid)) {
+      return results;
+    }
+
     const runtime = await getRuntime(
       strapi,
-      await getSettings(),
+      settings,
       sourceUid,
       targetField,
       ctx.state.userAbility
@@ -413,6 +245,11 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
       return data;
     }
 
+    const settings = await getSettings();
+    if (!isCollectionEnabled(settings.collections, sourceUid)) {
+      return data;
+    }
+
     const next = { ...data };
     if (next.contentType) {
       next.contentType = await decorateConfiguration(next.contentType, sourceUid);
@@ -432,6 +269,10 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
 
   const decorateCollectionResults = async (ctx: any, sourceUid: string, results: unknown[]) => {
     const settings = await getSettings();
+    if (!isCollectionEnabled(settings.collections, sourceUid)) {
+      return results;
+    }
+
     const runtimeCache = new Map<string, RelationRuntime | null>();
     const sourceSchemas = new Map<string, SchemaLike | undefined>();
 
@@ -510,5 +351,5 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
   };
 };
 
-export { compileTemplate, parseTemplate, renderTemplate };
+export { compileTemplate, parseTemplate, renderTemplate } from './utils/relation-labels';
 export default relationLabels;

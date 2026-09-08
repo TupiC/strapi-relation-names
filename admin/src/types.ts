@@ -1,4 +1,5 @@
 export type RelationNamesSettings = {
+  collections: string[];
   relations: Record<string, Record<string, string>>;
 };
 
