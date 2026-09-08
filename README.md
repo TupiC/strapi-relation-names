@@ -171,6 +171,7 @@ The default label is also used when:
 - [ ] Live label previews while editing templates
 - [ ] Define default relation templates in plugin configuration
 - [x] Support nested field paths in templates
+- [x] Support nested relation fields in templates
 - [ ] Import and export relation-label settings
 - [ ] Conditional labels and configurable fallback rules
 - [ ] Support label transformation functions (e.g., `toUpperCase`, `toLowerCase`, `capitalize`, etc.)

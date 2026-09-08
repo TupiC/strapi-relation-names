@@ -9,6 +9,13 @@ describe('relation label population', () => {
     ).toEqual({ mainParticipant: true, profile: true });
   });
 
+  it('populates nested relation paths', () => {
+    expect(buildPopulate(['registrations.firstName'])).toEqual({ registrations: true });
+    expect(buildPopulate(['registrations.participant.firstName'])).toEqual({
+      registrations: { populate: { participant: true } },
+    });
+  });
+
   it('does not add population for top-level template fields', () => {
     expect(buildPopulate(['name'])).toBeUndefined();
   });

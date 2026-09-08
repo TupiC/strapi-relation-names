@@ -27,6 +27,8 @@ const SYSTEM_SCALAR_FIELDS = [
 type TemplateAttribute = {
   type?: string;
   component?: string;
+  target?: string;
+  targetModel?: string;
   private?: boolean;
 };
 
@@ -35,6 +37,18 @@ type TemplateSchema = {
 };
 
 const PLACEHOLDER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+
+const getNestedSchemaUid = (attribute: TemplateAttribute): string | undefined => {
+  if (attribute.type === 'component') {
+    return attribute.component;
+  }
+
+  if (attribute.type === 'relation') {
+    return attribute.targetModel ?? attribute.target;
+  }
+
+  return undefined;
+};
 
 const getPlaceholders = (template: string): string[] | null => {
   if (!template.trim()) {
@@ -96,11 +110,12 @@ const validateTemplate = (
         return !FIELD_TYPES.has(attribute.type ?? '');
       }
 
-      if (attribute.type !== 'component' || !attribute.component) {
+      const nestedSchemaUid = getNestedSchemaUid(attribute);
+      if (!nestedSchemaUid) {
         return true;
       }
 
-      currentAttributes = schemas?.get(attribute.component)?.attributes;
+      currentAttributes = schemas?.get(nestedSchemaUid)?.attributes;
     }
 
     return true;
@@ -128,19 +143,16 @@ const getAvailableFields = (
       return [path];
     }
 
-    if (
-      attribute.type !== 'component' ||
-      !attribute.component ||
-      ancestors.has(attribute.component)
-    ) {
+    const nestedSchemaUid = getNestedSchemaUid(attribute);
+    if (!nestedSchemaUid || ancestors.has(nestedSchemaUid)) {
       return [];
     }
 
     return getAvailableFields(
-      schemas.get(attribute.component),
+      schemas.get(nestedSchemaUid),
       schemas,
       `${path}.`,
-      new Set([...ancestors, attribute.component])
+      new Set([...ancestors, nestedSchemaUid])
     );
   });
 

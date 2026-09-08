@@ -5,8 +5,24 @@ import { getAvailableFields, validateTemplate } from './template';
 const schema = {
   attributes: {
     name: { type: 'string' },
+    registrations: {
+      type: 'relation',
+      target: 'api::registration.registration',
+    },
   },
 };
+
+const schemas = new Map([
+  [
+    'api::registration.registration',
+    {
+      attributes: {
+        firstName: { type: 'string' },
+        privateName: { type: 'string', private: true },
+      },
+    },
+  ],
+]);
 
 describe('template system fields', () => {
   it('accepts scalar system fields', () => {
@@ -16,7 +32,7 @@ describe('template system fields', () => {
   });
 
   it('lists scalar system fields with regular fields', () => {
-    expect(getAvailableFields(schema, new Map())).toEqual([
+    expect(getAvailableFields({ attributes: { name: { type: 'string' } } }, new Map())).toEqual([
       'id',
       'documentId',
       'createdAt',
@@ -26,5 +42,14 @@ describe('template system fields', () => {
       'status',
       'name',
     ]);
+  });
+
+  it('lists and validates scalar fields nested in a relation', () => {
+    expect(getAvailableFields(schema, schemas)).toContain('registrations.firstName');
+    expect(getAvailableFields(schema, schemas)).not.toContain('registrations.privateName');
+    expect(validateTemplate('{registrations.firstName}', schema.attributes, schemas)).toBeNull();
+    expect(validateTemplate('{registrations.privateName}', schema.attributes, schemas)).toContain(
+      'registrations.privateName'
+    );
   });
 });

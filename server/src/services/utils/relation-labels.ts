@@ -60,6 +60,12 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 export const getPathValue = (value: unknown, path: string): unknown => {
   return path.split('.').reduce<unknown>((current, segment) => {
+    if (Array.isArray(current)) {
+      return current
+        .map((item) => (isRecord(item) ? item[segment] : undefined))
+        .filter((item) => item !== undefined);
+    }
+
     return isRecord(current) ? current[segment] : undefined;
   }, value);
 };
@@ -132,11 +138,18 @@ export const compileTemplate = (
         return SCALAR_TYPES.has(attribute.type ?? '');
       }
 
-      if (attribute.type !== 'component' || !attribute.component || !resolveSchema) {
+      const nestedSchemaUid =
+        attribute.type === 'component'
+          ? attribute.component
+          : attribute.type === 'relation'
+            ? attribute.target
+            : undefined;
+
+      if (!nestedSchemaUid || !resolveSchema) {
         return false;
       }
 
-      schema = resolveSchema(attribute.component);
+      schema = resolveSchema(nestedSchemaUid);
       if (!schema) {
         return false;
       }

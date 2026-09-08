@@ -109,14 +109,41 @@ const getRuntime = async (
   };
 };
 
-const buildPopulate = (placeholders: string[]): Record<string, true> | undefined => {
-  const roots = new Set(
-    placeholders
-      .filter((placeholder) => placeholder.includes('.'))
-      .map((placeholder) => placeholder.split('.')[0])
-  );
+type Populate = Record<string, true | { populate: Populate }>;
 
-  return roots.size > 0 ? Object.fromEntries(Array.from(roots, (root) => [root, true])) : undefined;
+const buildPopulate = (placeholders: string[]): Populate | undefined => {
+  const populate: Populate = {};
+
+  for (const placeholder of placeholders) {
+    const segments = placeholder.split('.');
+    if (segments.length < 2) {
+      continue;
+    }
+
+    let current = populate;
+    for (const [index, segment] of segments.slice(0, -1).entries()) {
+      const existing = current[segment];
+      if (existing === true) {
+        break;
+      }
+
+      if (index === segments.length - 2) {
+        current[segment] = existing ?? true;
+        break;
+      }
+
+      if (!existing) {
+        current[segment] = { populate: {} };
+      }
+
+      const next = current[segment];
+      if (next !== true) {
+        current = next.populate;
+      }
+    }
+  }
+
+  return Object.keys(populate).length > 0 ? populate : undefined;
 };
 
 const hydrateValues = async (

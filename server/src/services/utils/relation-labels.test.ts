@@ -15,6 +15,10 @@ const targetSchema = {
       type: 'component',
       component: 'default.participant',
     },
+    registrations: {
+      type: 'relation',
+      target: 'api::registration.registration',
+    },
   },
 };
 
@@ -27,6 +31,16 @@ const componentSchemas = new Map([
         firstName: { type: 'string' },
         lastName: { type: 'string' },
         secret: { type: 'string', private: true },
+      },
+    },
+  ],
+  [
+    'api::registration.registration',
+    {
+      uid: 'api::registration.registration',
+      attributes: {
+        firstName: { type: 'string' },
+        privateName: { type: 'string', private: true },
       },
     },
   ],
@@ -88,6 +102,21 @@ describe('relation label templates', () => {
     ).toBe('Ada Lovelace');
   });
 
+  it('compiles and renders scalar fields nested in a relation', () => {
+    const compiled = compileTemplate('{registrations.firstName}', targetSchema, (uid) =>
+      componentSchemas.get(uid)
+    );
+
+    expect(compiled).toMatchObject({
+      placeholders: ['registrations.firstName'],
+      displayField: 'firstName',
+    });
+    expect(renderTemplate(compiled!, { registrations: { firstName: 'Ada' } })).toBe('Ada');
+    expect(
+      renderTemplate(compiled!, { registrations: [{ firstName: 'Ada' }, { firstName: 'Grace' }] })
+    ).toBe('Ada,Grace');
+  });
+
   it('rejects malformed, unknown, private, and unsupported placeholders', () => {
     expect(parseTemplate('{firstName')).toBeNull();
     expect(parseTemplate('firstName}')).toBeNull();
@@ -99,6 +128,14 @@ describe('relation label templates', () => {
     ).toBeNull();
     expect(
       compileTemplate('{mainParticipant.unknown}', targetSchema, (uid) => componentSchemas.get(uid))
+    ).toBeNull();
+    expect(
+      compileTemplate('{registrations.privateName}', targetSchema, (uid) =>
+        componentSchemas.get(uid)
+      )
+    ).toBeNull();
+    expect(
+      compileTemplate('{registrations.unknown}', targetSchema, (uid) => componentSchemas.get(uid))
     ).toBeNull();
     expect(compileTemplate('Only static text', targetSchema)).toBeNull();
     expect(compileTemplate('{first-name}', targetSchema)).toBeNull();

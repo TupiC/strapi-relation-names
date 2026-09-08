@@ -2,10 +2,9 @@
 
 ## [1.1.0](https://github.com/TupiC/strapi-relation-names/compare/v1.0.0...v1.1.0) (2026-09-08)
 
-
 ### Features
 
-* support nested field paths in templates ([5db6d7c](https://github.com/TupiC/strapi-relation-names/commit/5db6d7c83ac58c5f54331024308bd499fbb86db4))
+- support nested field paths in templates ([5db6d7c](https://github.com/TupiC/strapi-relation-names/commit/5db6d7c83ac58c5f54331024308bd499fbb86db4))
 
 ## 1.0.0 (2026-09-08)
 
