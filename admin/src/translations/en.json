@@ -1,7 +1,7 @@
 {
   "plugin.name": "Relation Names",
   "settings.title": "Relation Names",
-  "settings.description": "Choose how related entries are displayed in the Content Manager. Use one or more scalar fields from the related content type, such as a first and last name.",
+  "settings.description": "Choose how related entries are labeled, using fields such as first and last name.",
   "settings.target": "Related content: {target}",
   "settings.template": "Label template",
   "settings.availableFields": "Available fields",

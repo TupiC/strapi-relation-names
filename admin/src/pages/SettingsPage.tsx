@@ -1,5 +1,15 @@
-import { Box, Button, Field, Flex, Main, TextInput, Typography } from '@strapi/design-system';
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import {
+  Accordion,
+  Box,
+  Button,
+  Field,
+  Flex,
+  Main,
+  TextInput,
+  Typography,
+} from '@strapi/design-system';
+import styled from 'styled-components';
+import { Fragment, useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useIntl } from 'react-intl';
 
 import { useFetchClient } from '@strapi/strapi/admin';
@@ -15,6 +25,22 @@ import { getTranslation } from '../utils/getTranslation';
 import { getAvailableFields, validateTemplate } from '../utils/template';
 
 const PLUGIN_SETTINGS_PATH = '/strapi-relation-names/settings';
+
+const AvailableField = styled(Typography)`
+  display: inline-block;
+  padding: 1px 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    border-color: currentColor;
+  }
+`;
 
 type RelationRow = {
   source: Schema;
@@ -129,11 +155,26 @@ const SettingsPage = () => {
         <Typography variant="alpha" tag="h1" id="relation-names-title">
           {formatMessage({ id: getTranslation('settings.title') })}
         </Typography>
-        <Box paddingTop={2} paddingBottom={6}>
+        <Flex
+          gap={2}
+          width="100%"
+          paddingBottom={6}
+          style={{
+            'justify-content': 'space-between',
+            position: 'sticky',
+            top: '.5rem',
+            zIndex: 1,
+          }}
+        >
           <Typography textColor="neutral600">
             {formatMessage({ id: getTranslation('settings.description') })}
           </Typography>
-        </Box>
+          {!isLoading && rows.length > 0 ? (
+            <Button loading={isSaving} disabled={isSaving} onClick={() => void save()}>
+              {formatMessage({ id: getTranslation('settings.save') })}
+            </Button>
+          ) : null}
+        </Flex>
 
         {isLoading ? (
           <Typography>{formatMessage({ id: getTranslation('settings.loading') })}</Typography>
@@ -155,6 +196,19 @@ const SettingsPage = () => {
               const validationError = template
                 ? validateTemplate(template, targetAttributes, schemaMap)
                 : null;
+              const availableFields = getAvailableFields(target, schemaMap);
+
+              const toggleField = (field: string) => {
+                const placeholder = `{${field}}`;
+                const nextTemplate = template.includes(placeholder)
+                  ? template
+                      .replaceAll(placeholder, '')
+                      .replace(/\s{2,}/g, ' ')
+                      .trim()
+                  : `${template.trim()}${template.trim() ? ' ' : ''}${placeholder}`;
+
+                updateTemplate(source.uid, fieldName, nextTemplate);
+              };
 
               return (
                 <Box
@@ -181,7 +235,9 @@ const SettingsPage = () => {
                     name={`${source.uid}.${fieldName}`}
                   >
                     <Field.Label>
-                      {formatMessage({ id: getTranslation('settings.template') })}
+                      {formatMessage({
+                        id: getTranslation('settings.template'),
+                      })}
                     </Field.Label>
                     <TextInput
                       value={template}
@@ -194,23 +250,45 @@ const SettingsPage = () => {
                     <Field.Error />
                   </Field.Root>
                   <Box paddingTop={2}>
-                    <Typography variant="pi" textColor="neutral600">
-                      {formatMessage({ id: getTranslation('settings.availableFields') })}:{' '}
-                      {getAvailableFields(target, schemaMap).join(', ')}
-                    </Typography>
+                    <Accordion.Root collapsible>
+                      <Accordion.Item value="available-fields">
+                        <Accordion.Header>
+                          <Accordion.Trigger>
+                            {formatMessage({
+                              id: getTranslation('settings.availableFields'),
+                            })}
+                          </Accordion.Trigger>
+                        </Accordion.Header>
+                        <Accordion.Content>
+                          <Typography variant="pi" textColor="neutral600">
+                            {availableFields.map((field, index) => {
+                              const placeholder = `{${field}}`;
+
+                              return (
+                                <Fragment key={field}>
+                                  {index > 0 ? ', ' : null}
+                                  <AvailableField
+                                    as="button"
+                                    type="button"
+                                    variant="pi"
+                                    textColor="neutral600"
+                                    aria-pressed={template.includes(placeholder)}
+                                    onClick={() => toggleField(field)}
+                                  >
+                                    {field}
+                                  </AvailableField>
+                                </Fragment>
+                              );
+                            })}
+                          </Typography>
+                        </Accordion.Content>
+                      </Accordion.Item>
+                    </Accordion.Root>
                   </Box>
                 </Box>
               );
             })
           : null}
-
-        {!isLoading && rows.length > 0 ? (
-          <Flex justifyContent="flex-end" paddingTop={4}>
-            <Button loading={isSaving} disabled={isSaving} onClick={() => void save()}>
-              {formatMessage({ id: getTranslation('settings.save') })}
-            </Button>
-          </Flex>
-        ) : null}
       </Box>
     </Main>
   );

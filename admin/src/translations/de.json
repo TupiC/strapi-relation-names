@@ -1,7 +1,7 @@
 {
   "plugin.name": "Relationsnamen",
   "settings.title": "Relationsnamen",
-  "settings.description": "Legen Sie fest, wie verknüpfte Einträge im Content Manager angezeigt werden. Verwenden Sie ein oder mehrere skalare Felder des verknüpften Inhaltstyps, zum Beispiel Vor- und Nachname.",
+  "settings.description": "Legen Sie fest, wie verknüpfte Einträge beschriftet werden, z. B. mit Vor- und Nachname.",
   "settings.target": "Verknüpfter Inhalt: {target}",
   "settings.template": "Bezeichnungsvorlage",
   "settings.availableFields": "Verfügbare Felder",
