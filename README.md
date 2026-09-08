@@ -116,12 +116,6 @@ Example:
 
 ## ⚙️ Templates
 
-Templates use direct field placeholders:
-
-```text
-{fieldName}
-```
-
 Multiple placeholders can be combined:
 
 ```text
