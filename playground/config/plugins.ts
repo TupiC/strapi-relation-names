@@ -1,34 +1,32 @@
-import type { Core } from "@strapi/strapi";
+import type { Core } from '@strapi/strapi';
 
 const allowedMediaTypes = [
-  "image/*",
-  "video/*",
-  "audio/*",
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.*",
-  "text/plain",
-  "text/csv",
+  'image/*',
+  'video/*',
+  'audio/*',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.*',
+  'text/plain',
+  'text/csv',
 ];
 
 const deniedTypes = [
-  "image/svg+xml",
-  "application/vnd.microsoft.portable-executable",
-  "application/x-msdownload",
-  "application/x-msdos-program",
-  "application/x-executable",
-  "application/x-dosexec",
-  "application/x-sh",
-  "text/x-shellscript",
-  "application/x-mach-binary",
+  'image/svg+xml',
+  'application/vnd.microsoft.portable-executable',
+  'application/x-msdownload',
+  'application/x-msdos-program',
+  'application/x-executable',
+  'application/x-dosexec',
+  'application/x-sh',
+  'text/x-shellscript',
+  'application/x-mach-binary',
 ];
 
-const config = ({
-  env,
-}: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
-  "users-permissions": {
+const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
+  'users-permissions': {
     config: {
-      jwtManagement: "refresh",
+      jwtManagement: 'refresh',
       sessions: {
         httpOnly: true,
       },
@@ -42,10 +40,10 @@ const config = ({
       },
     },
   },
-  "strapi-relation-names": {
+  'strapi-relation-names': {
     enabled: true,
     config: {
-      collections: ["api::article.article", "api::author.author"],
+      collections: ['api::article.article', 'api::author.author'],
     },
   },
 });
