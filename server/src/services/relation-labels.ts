@@ -272,9 +272,17 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
       const editMetadata = isRecord(metadata.edit) ? metadata.edit : {};
       const configuredMainField =
         typeof editMetadata.mainField === 'string' ? editMetadata.mainField : 'id';
-      const displayField = compiled.placeholders.some((placeholder) => placeholder.includes('.'))
-        ? configuredMainField
-        : compiled.displayField;
+      const isNestedTemplate = compiled.placeholders.some((placeholder) =>
+        placeholder.includes('.')
+      );
+      const isIdentityField = configuredMainField === 'id' || configuredMainField === 'documentId';
+
+      const displayField =
+        isNestedTemplate && isIdentityField
+          ? 'label'
+          : isNestedTemplate
+            ? configuredMainField
+            : compiled.displayField;
 
       metadatas[fieldName] = {
         ...metadata,

@@ -2,17 +2,15 @@
 
 ## [1.2.1](https://github.com/TupiC/strapi-relation-names/compare/v1.2.0...v1.2.1) (2026-09-08)
 
-
 ### Bug Fixes
 
-* **settings:** improve relation label configuration ([cc421eb](https://github.com/TupiC/strapi-relation-names/commit/cc421eb7fb94ec29bcc0c4d599d4b276a01ef913))
+- **settings:** improve relation label configuration ([cc421eb](https://github.com/TupiC/strapi-relation-names/commit/cc421eb7fb94ec29bcc0c4d599d4b276a01ef913))
 
 ## [1.2.0](https://github.com/TupiC/strapi-relation-names/compare/v1.1.0...v1.2.0) (2026-09-08)
 
-
 ### Features
 
-* support nested relation fields in templates ([de4cfe6](https://github.com/TupiC/strapi-relation-names/commit/de4cfe6be92705ffc4a487fea37fb92537430f2d))
+- support nested relation fields in templates ([de4cfe6](https://github.com/TupiC/strapi-relation-names/commit/de4cfe6be92705ffc4a487fea37fb92537430f2d))
 
 ## [1.1.0](https://github.com/TupiC/strapi-relation-names/compare/v1.0.0...v1.1.0) (2026-09-08)
 

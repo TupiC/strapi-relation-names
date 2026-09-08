@@ -61,6 +61,25 @@ describe('relation values', () => {
     expect(value).toEqual({ id: 1 });
   });
 
+  it('preserves identity fields for nested labels', () => {
+    const value = { id: 1, documentId: 'doc-1' };
+    const nestedRuntime = {
+      ...runtime,
+      template: '{mainParticipant.firstName} {mainParticipant.lastName}',
+      placeholders: ['mainParticipant.firstName', 'mainParticipant.lastName'],
+      displayField: 'documentId',
+      originalMainField: 'documentId',
+    };
+
+    expect(
+      applyLabel(
+        value,
+        { mainParticipant: { firstName: 'Ada', lastName: 'Lovelace' } },
+        nestedRuntime
+      )
+    ).toEqual({ id: 1, documentId: 'doc-1', label: 'Ada Lovelace' });
+  });
+
   it('falls back to the original main field when the label is blank', () => {
     const value = { id: 1 };
     expect(

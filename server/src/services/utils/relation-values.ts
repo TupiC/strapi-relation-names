@@ -33,6 +33,13 @@ export const applyLabel = (
   const label = renderTemplate(runtime, hydrated);
 
   if (label) {
+    const isNestedTemplate = runtime.placeholders.some((placeholder) => placeholder.includes('.'));
+    const isIdentityField = runtime.displayField === 'id' || runtime.displayField === 'documentId';
+
+    if (isNestedTemplate && isIdentityField) {
+      return { ...value, label };
+    }
+
     return { ...value, [runtime.displayField]: label };
   }
 
