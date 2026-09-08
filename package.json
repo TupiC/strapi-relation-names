@@ -5,7 +5,7 @@
   "author": "Christoph Tupi <christoph.tupi@gmail.com>",
   "keywords": [],
   "type": "commonjs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "strapi": {
     "kind": "plugin",
     "name": "strapi-relation-names",

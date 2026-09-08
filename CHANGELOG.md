@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/TupiC/strapi-relation-names/compare/v1.2.0...v1.2.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **settings:** improve relation label configuration ([cc421eb](https://github.com/TupiC/strapi-relation-names/commit/cc421eb7fb94ec29bcc0c4d599d4b276a01ef913))
+
 ## [1.2.0](https://github.com/TupiC/strapi-relation-names/compare/v1.1.0...v1.2.0) (2026-09-08)
 
 
