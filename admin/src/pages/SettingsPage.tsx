@@ -12,7 +12,7 @@ import type {
   SettingsResponse,
 } from '../types';
 import { getTranslation } from '../utils/getTranslation';
-import { validateTemplate } from '../utils/template';
+import { getAvailableFields, validateTemplate } from '../utils/template';
 
 const PLUGIN_SETTINGS_PATH = '/strapi-relation-names/settings';
 
@@ -153,7 +153,7 @@ const SettingsPage = () => {
               const targetAttributes = target?.attributes ?? {};
               const template = settings.relations[source.uid]?.[fieldName] ?? '';
               const validationError = template
-                ? validateTemplate(template, targetAttributes)
+                ? validateTemplate(template, targetAttributes, schemaMap)
                 : null;
 
               return (
@@ -196,7 +196,7 @@ const SettingsPage = () => {
                   <Box paddingTop={2}>
                     <Typography variant="pi" textColor="neutral600">
                       {formatMessage({ id: getTranslation('settings.availableFields') })}:{' '}
-                      {Object.keys(targetAttributes).join(', ')}
+                      {getAvailableFields(target, schemaMap).join(', ')}
                     </Typography>
                   </Box>
                 </Box>

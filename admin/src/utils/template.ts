@@ -14,6 +14,28 @@ const FIELD_TYPES = new Set([
   'boolean',
 ]);
 
+const SYSTEM_SCALAR_FIELDS = [
+  'id',
+  'documentId',
+  'createdAt',
+  'updatedAt',
+  'publishedAt',
+  'locale',
+  'status',
+];
+
+type TemplateAttribute = {
+  type?: string;
+  component?: string;
+  private?: boolean;
+};
+
+type TemplateSchema = {
+  attributes?: Record<string, TemplateAttribute>;
+};
+
+const PLACEHOLDER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+
 const getPlaceholders = (template: string): string[] | null => {
   if (!template.trim()) {
     return null;
@@ -29,7 +51,7 @@ const getPlaceholders = (template: string): string[] | null => {
     }
 
     const name = match[1];
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+    if (!PLACEHOLDER_PATTERN.test(name)) {
       return null;
     }
 
@@ -46,17 +68,84 @@ const getPlaceholders = (template: string): string[] | null => {
 
 const validateTemplate = (
   template: string,
-  attributes: Record<string, { type?: string }> | undefined
+  attributes: Record<string, TemplateAttribute> | undefined,
+  schemas?: ReadonlyMap<string, TemplateSchema>
 ): string | null => {
   const placeholders = getPlaceholders(template);
   if (!placeholders) {
     return 'Use at least one valid {fieldName} placeholder.';
   }
 
-  const invalidField = placeholders.find(
-    (field) => !FIELD_TYPES.has(attributes?.[field]?.type ?? '')
-  );
+  const invalidField = placeholders.find((path) => {
+    const segments = path.split('.');
+    let currentAttributes = attributes;
+
+    for (const [index, segment] of segments.entries()) {
+      if (index === 0 && segments.length === 1 && SYSTEM_SCALAR_FIELDS.includes(segment)) {
+        return false;
+      }
+
+      const attribute = currentAttributes?.[segment];
+      const isLastSegment = index === segments.length - 1;
+
+      if (!attribute || attribute.private === true) {
+        return true;
+      }
+
+      if (isLastSegment) {
+        return !FIELD_TYPES.has(attribute.type ?? '');
+      }
+
+      if (attribute.type !== 'component' || !attribute.component) {
+        return true;
+      }
+
+      currentAttributes = schemas?.get(attribute.component)?.attributes;
+    }
+
+    return true;
+  });
   return invalidField ? `“${invalidField}” is not an available scalar field.` : null;
 };
 
-export { getPlaceholders, validateTemplate };
+const getAvailableFields = (
+  schema: TemplateSchema | undefined,
+  schemas: ReadonlyMap<string, TemplateSchema>,
+  prefix = '',
+  ancestors = new Set<string>()
+): string[] => {
+  if (!schema) {
+    return [];
+  }
+
+  const fields = Object.entries(schema.attributes ?? {}).flatMap(([name, attribute]) => {
+    if (attribute.private === true) {
+      return [];
+    }
+
+    const path = `${prefix}${name}`;
+    if (FIELD_TYPES.has(attribute.type ?? '')) {
+      return [path];
+    }
+
+    if (
+      attribute.type !== 'component' ||
+      !attribute.component ||
+      ancestors.has(attribute.component)
+    ) {
+      return [];
+    }
+
+    return getAvailableFields(
+      schemas.get(attribute.component),
+      schemas,
+      `${path}.`,
+      new Set([...ancestors, attribute.component])
+    );
+  });
+
+  const systemFields = prefix === '' ? SYSTEM_SCALAR_FIELDS : [];
+  return [...systemFields, ...fields.filter((field) => !systemFields.includes(field))];
+};
+
+export { getAvailableFields, getPlaceholders, validateTemplate };

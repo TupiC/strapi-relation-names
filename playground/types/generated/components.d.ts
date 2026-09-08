@@ -11,6 +11,17 @@ export interface SharedMedia extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedParticipant extends Struct.ComponentSchema {
+  collectionName: 'components_shared_participants';
+  info: {
+    displayName: 'Participant';
+  };
+  attributes: {
+    firstName: Schema.Attribute.String;
+    lastName: Schema.Attribute.String;
+  };
+}
+
 export interface SharedQuote extends Struct.ComponentSchema {
   collectionName: 'components_shared_quotes';
   info: {
@@ -66,6 +77,7 @@ declare module '@strapi/strapi' {
   export namespace Public {
     export interface ComponentSchemas {
       'shared.media': SharedMedia;
+      'shared.participant': SharedParticipant;
       'shared.quote': SharedQuote;
       'shared.rich-text': SharedRichText;
       'shared.seo': SharedSeo;

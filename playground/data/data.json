@@ -53,12 +53,20 @@
     {
       "name": "David Doe",
       "email": "daviddoe@strapi.io",
-      "avatar": "daviddoe@strapi.io.jpg"
+      "avatar": "daviddoe@strapi.io.jpg",
+      "mainParticipant": {
+        "firstName": "David",
+        "lastName": "Doe"
+      }
     },
     {
       "name": "Sarah Baker",
       "email": "sarahbaker@strapi.io",
-      "avatar": "sarahbaker@strapi.io.jpg"
+      "avatar": "sarahbaker@strapi.io.jpg",
+      "mainParticipant": {
+        "firstName": "Sarah",
+        "lastName": "Baker"
+      }
     }
   ],
   "articles": [

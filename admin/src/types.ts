@@ -7,6 +7,8 @@ export type SchemaAttribute = {
   type?: string;
   targetModel?: string;
   target?: string;
+  component?: string;
+  private?: boolean;
   relationType?: string;
 };
 

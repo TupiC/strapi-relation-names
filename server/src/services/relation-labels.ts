@@ -4,6 +4,7 @@ import type { RelationNamesSettings } from '../types';
 
 import {
   compileTemplate,
+  getPathValue,
   isRecord,
   parseTemplate,
   renderTemplate,
@@ -76,24 +77,46 @@ const getRuntime = async (
   const targetSchema = strapi.getModel(attribute.target as never) as unknown as
     | SchemaLike
     | undefined;
-  const compiled = typeof template === 'string' ? compileTemplate(template, targetSchema) : null;
+  const compiled =
+    typeof template === 'string'
+      ? compileTemplate(
+          template,
+          targetSchema,
+          (uid) => strapi.getModel(uid as never) as unknown as SchemaLike | undefined
+        )
+      : null;
 
   if (!compiled || !targetSchema) {
     return null;
   }
 
+  const originalMainField = await getOriginalMainField(
+    strapi,
+    sourceSchema,
+    targetSchema,
+    targetField,
+    userAbility
+  );
+
   return {
     ...compiled,
+    displayField: compiled.placeholders.some((placeholder) => placeholder.includes('.'))
+      ? originalMainField
+      : compiled.displayField,
     sourceUid,
     targetUid: targetSchema.uid,
-    originalMainField: await getOriginalMainField(
-      strapi,
-      sourceSchema,
-      targetSchema,
-      targetField,
-      userAbility
-    ),
+    originalMainField,
   };
+};
+
+const buildPopulate = (placeholders: string[]): Record<string, true> | undefined => {
+  const roots = new Set(
+    placeholders
+      .filter((placeholder) => placeholder.includes('.'))
+      .map((placeholder) => placeholder.split('.')[0])
+  );
+
+  return roots.size > 0 ? Object.fromEntries(Array.from(roots, (root) => [root, true])) : undefined;
 };
 
 const hydrateValues = async (
@@ -105,7 +128,7 @@ const hydrateValues = async (
   const targetSchema = strapi.getModel(runtime.targetUid as never) as unknown as SchemaLike;
   const targetModelType = targetSchema.modelType;
   const missingFields = runtime.placeholders.filter((field) =>
-    values.some((value) => !Object.prototype.hasOwnProperty.call(value, field))
+    values.some((value) => getPathValue(value, field) === undefined)
   );
 
   if (missingFields.length === 0) {
@@ -127,7 +150,7 @@ const hydrateValues = async (
       .create({ userAbility: ctx.state.userAbility, model: runtime.targetUid });
     const fields = Array.from(
       new Set([
-        ...runtime.placeholders,
+        ...runtime.placeholders.filter((field) => !field.includes('.')),
         runtime.originalMainField,
         'id',
         'documentId',
@@ -135,10 +158,12 @@ const hydrateValues = async (
         'publishedAt',
       ])
     );
+    const populate = buildPopulate(runtime.placeholders);
     const identityField = targetModelType === 'component' ? 'id' : 'documentId';
     const permissionQuery = await permissionChecker.sanitizedQuery.read({
       fields,
       filters: { [identityField]: { $in: identities } },
+      ...(populate ? { populate } : {}),
     });
     const query = strapi.get('query-params').transform(runtime.targetUid, permissionQuery);
     const hydrated = (await strapi.db.query(runtime.targetUid).findMany(query)) as Record<
@@ -210,24 +235,32 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
         | undefined;
       const compiled = compileTemplate(
         settings.relations[sourceUid]?.[fieldName] ?? '',
-        targetSchema
+        targetSchema,
+        (uid) => strapi.getModel(uid as never) as unknown as SchemaLike | undefined
       );
       if (!compiled || !isRecord(metadata)) {
         continue;
       }
 
+      const editMetadata = isRecord(metadata.edit) ? metadata.edit : {};
+      const configuredMainField =
+        typeof editMetadata.mainField === 'string' ? editMetadata.mainField : 'id';
+      const displayField = compiled.placeholders.some((placeholder) => placeholder.includes('.'))
+        ? configuredMainField
+        : compiled.displayField;
+
       metadatas[fieldName] = {
         ...metadata,
         edit: {
-          ...(isRecord(metadata.edit) ? metadata.edit : {}),
-          mainField: compiled.displayField,
+          ...editMetadata,
+          mainField: displayField,
         },
         list: {
           ...(isRecord(metadata.list) ? metadata.list : {}),
-          mainField: compiled.displayField,
+          mainField: displayField,
         },
       };
-      relationNames[fieldName] = { mainField: compiled.displayField };
+      relationNames[fieldName] = { mainField: displayField };
     }
 
     return {
@@ -351,5 +384,6 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
   };
 };
 
+export { buildPopulate };
 export { compileTemplate, parseTemplate, renderTemplate } from './utils/relation-labels';
 export default relationLabels;

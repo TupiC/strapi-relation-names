@@ -478,6 +478,7 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::author.author'> &
       Schema.Attribute.Private;
+    mainParticipant: Schema.Attribute.Component<'shared.participant', false>;
     name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;

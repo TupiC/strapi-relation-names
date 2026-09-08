@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import relationLabels from './relation-labels';
+import relationLabels, { buildPopulate } from './relation-labels';
+
+describe('relation label population', () => {
+  it('populates component roots for nested template fields', () => {
+    expect(
+      buildPopulate(['mainParticipant.firstName', 'mainParticipant.lastName', 'profile.name'])
+    ).toEqual({ mainParticipant: true, profile: true });
+  });
+
+  it('does not add population for top-level template fields', () => {
+    expect(buildPopulate(['name'])).toBeUndefined();
+  });
+});
 
 describe('relation labels collection config', () => {
   it('does not decorate results for a collection outside the configured list', async () => {

@@ -43,7 +43,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   'strapi-relation-names': {
     enabled: true,
     config: {
-      collections: ['api::article.article', 'api::author.author'],
+      collections: [],
     },
   },
 });

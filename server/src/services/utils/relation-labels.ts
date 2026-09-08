@@ -13,6 +13,8 @@ export type SchemaLike = {
   attributes?: Record<string, SchemaAttribute>;
 };
 
+export type SchemaResolver = (uid: string) => SchemaLike | undefined;
+
 export type CompiledTemplate = {
   template: string;
   placeholders: string[];
@@ -41,8 +43,26 @@ const SCALAR_TYPES = new Set([
   'boolean',
 ]);
 
+const SYSTEM_SCALAR_FIELDS = new Set([
+  'id',
+  'documentId',
+  'createdAt',
+  'updatedAt',
+  'publishedAt',
+  'locale',
+  'status',
+]);
+
+const PLACEHOLDER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+export const getPathValue = (value: unknown, path: string): unknown => {
+  return path.split('.').reduce<unknown>((current, segment) => {
+    return isRecord(current) ? current[segment] : undefined;
+  }, value);
+};
 
 export const parseTemplate = (template: string): string[] | null => {
   if (!template.trim()) {
@@ -70,7 +90,7 @@ export const parseTemplate = (template: string): string[] | null => {
     }
 
     const name = template.slice(openingBrace + 1, end);
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+    if (!PLACEHOLDER_PATTERN.test(name)) {
       return null;
     }
 
@@ -83,20 +103,46 @@ export const parseTemplate = (template: string): string[] | null => {
 
 export const compileTemplate = (
   template: string,
-  targetSchema: SchemaLike | undefined
+  targetSchema: SchemaLike | undefined,
+  resolveSchema?: SchemaResolver
 ): CompiledTemplate | null => {
   const placeholders = parseTemplate(template);
-  const attributes = targetSchema?.attributes ?? {};
 
   if (!placeholders || !targetSchema) {
     return null;
   }
 
-  const valid = placeholders.every((name) => {
-    const attribute = attributes[name];
-    return Boolean(
-      attribute && attribute.private !== true && SCALAR_TYPES.has(attribute.type ?? '')
-    );
+  const valid = placeholders.every((path) => {
+    const segments = path.split('.');
+    let schema = targetSchema;
+
+    for (const [index, segment] of segments.entries()) {
+      const attribute = schema.attributes?.[segment];
+      const isLastSegment = index === segments.length - 1;
+
+      if (index === 0 && isLastSegment && SYSTEM_SCALAR_FIELDS.has(segment)) {
+        return true;
+      }
+
+      if (!attribute || attribute.private === true) {
+        return false;
+      }
+
+      if (isLastSegment) {
+        return SCALAR_TYPES.has(attribute.type ?? '');
+      }
+
+      if (attribute.type !== 'component' || !attribute.component || !resolveSchema) {
+        return false;
+      }
+
+      schema = resolveSchema(attribute.component);
+      if (!schema) {
+        return false;
+      }
+    }
+
+    return false;
   });
 
   if (!valid) {
@@ -106,7 +152,7 @@ export const compileTemplate = (
   return {
     template,
     placeholders,
-    displayField: placeholders[0],
+    displayField: placeholders[0].split('.').slice(-1)[0] ?? placeholders[0],
   };
 };
 
@@ -115,9 +161,9 @@ export const renderTemplate = (
   values: Record<string, unknown>
 ): string => {
   const rendered = compiled.template.replace(
-    /\{([A-Za-z_][A-Za-z0-9_]*)\}/g,
+    /\{([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\}/g,
     (_match, name: string) => {
-      const value = values[name];
+      const value = getPathValue(values, name);
       return value === null || value === undefined ? '' : String(value);
     }
   );

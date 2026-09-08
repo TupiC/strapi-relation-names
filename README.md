@@ -9,6 +9,10 @@ Display Strapi relations using readable labels built from your content fields in
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![npm](https://img.shields.io/npm/dt/strapi-relation-names)
 
+Ever wanted to display a relation as custom text or with nested field values? This plugin solves exactly that:
+
+![Relation labels example](assets/example.png)
+
 ---
 
 ## ✨ Features
@@ -138,13 +142,7 @@ Customer: {firstName} {lastName}
 
 ## 🗂️ How It Works
 
-The plugin changes how relations are displayed inside the Strapi Admin panel.
-
-The first placeholder in a template is used internally by Strapi's Admin relation renderer.
-
-Strapi's existing relation search and sorting continue to use the configured default main field.
-
-Missing field values are replaced with an empty string.
+At runtime, the server-side plugin decorates Strapi Content Manager relation responses and field metadata. It reads the configured template, validates each placeholder against the related content type schema, and renders the label from the returned relation data. If a value is not present, it performs a permission-aware hydration query; nested component paths are loaded by populating their component root. The rendered label is then exposed through Strapi's normal relation display mechanism. Missing field values are replaced with an empty string.
 
 For example:
 
@@ -172,9 +170,10 @@ The default label is also used when:
 
 - [ ] Live label previews while editing templates
 - [ ] Define default relation templates in plugin configuration
-- [ ] Support nested field paths in templates
+- [x] Support nested field paths in templates
 - [ ] Import and export relation-label settings
 - [ ] Conditional labels and configurable fallback rules
+- [ ] Support label transformation functions (e.g., `toUpperCase`, `toLowerCase`, `capitalize`, etc.)
 
 If you have any feature requests or suggestions, please open a dedicated issue.
 

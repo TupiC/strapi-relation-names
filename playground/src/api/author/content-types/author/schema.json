@@ -24,6 +24,10 @@
     "email": {
       "type": "string"
     },
+    "mainParticipant": {
+      "type": "component",
+      "component": "shared.participant"
+    },
     "articles": {
       "type": "relation",
       "relation": "oneToMany",
