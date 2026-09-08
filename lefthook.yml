@@ -5,8 +5,8 @@ pre-commit:
         - '*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'
         - '*.{json,jsonc,yaml,yml}'
         - '*.{css,scss,less,html,md,mdx}'
-      run: npm run oxfmt {staged_files}
+      run: npm run fmt -- {staged_files}
       stage_fixed: true
     - name: lint staged files
       glob: '*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'
-      run: npm run oxlint {staged_files}
+      run: npm run lint -- {staged_files}
