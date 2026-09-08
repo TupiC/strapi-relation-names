@@ -92,6 +92,28 @@ After saving the settings, the Strapi Admin reloads automatically so open Conten
 
 ---
 
+## ⚙️ Configuration
+
+Possible configuration keys are listed below; omitted keys keep the plugin defaults.
+
+| Key           | Description                                                                                     | Possible values |
+| ------------- | ----------------------------------------------------------------------------------------------- | --------------- |
+| `collections` | Limit relation names to the listed collection and single type UIDs. Leave empty to include all. | `string[]`      |
+
+Example:
+
+```javascript
+// config/plugins.{js,ts}
+'strapi-relation-names': {
+  enabled: true,
+  config: {
+    collections: ['api::article.article', 'api::author.author'],
+  },
+},
+```
+
+---
+
 ## ⚙️ Templates
 
 Templates use direct field placeholders:
