@@ -2,10 +2,9 @@
 
 ## [1.2.2](https://github.com/TupiC/strapi-relation-names/compare/v1.2.1...v1.2.2) (2026-09-08)
 
-
 ### Bug Fixes
 
-* **labels:** preserve relation identity fields ([860716b](https://github.com/TupiC/strapi-relation-names/commit/860716b789a390034cdb4dd0d4d2eacd27f361fc))
+- **labels:** preserve relation identity fields ([860716b](https://github.com/TupiC/strapi-relation-names/commit/860716b789a390034cdb4dd0d4d2eacd27f361fc))
 
 ## [1.2.1](https://github.com/TupiC/strapi-relation-names/compare/v1.2.0...v1.2.1) (2026-09-08)
 
