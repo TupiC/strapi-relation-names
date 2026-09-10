@@ -56,3 +56,43 @@ describe('relation labels collection config', () => {
     expect(getModelCalls).toBe(0);
   });
 });
+
+describe('relation labels configuration updates', () => {
+  it('restores synthetic relation main fields before Strapi validates the update', () => {
+    const settings = {
+      get: async () => ({ collections: [], relations: {} }),
+    };
+    const strapi = {
+      plugin: (name: string) => {
+        if (name !== 'strapi-relation-names') {
+          throw new Error(`Unexpected plugin: ${name}`);
+        }
+        return { service: () => settings };
+      },
+    } as any;
+    const service = relationLabels({ strapi });
+    const configuration = {
+      settings: {
+        relationNames: {
+          author: { mainField: 'label' },
+        },
+      },
+      metadatas: {
+        author: {
+          edit: { label: 'Author', mainField: 'label' },
+          list: { label: 'Author', mainField: 'label' },
+        },
+      },
+    };
+
+    expect(service.sanitizeConfigurationUpdate(configuration)).toEqual({
+      settings: {},
+      metadatas: {
+        author: {
+          edit: { label: 'Author', mainField: 'id' },
+          list: { label: 'Author', mainField: 'id' },
+        },
+      },
+    });
+  });
+});

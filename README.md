@@ -11,7 +11,7 @@ Display Strapi relations using readable labels built from your content fields in
 
 Ever wanted to display a relation as custom text or with nested field values? This plugin solves exactly that:
 
-![Relation labels example](assets/example.png)
+![Relation labels example](https://raw.githubusercontent.com/TupiC/strapi-relation-names/main/assets/example.png)
 
 ---
 
@@ -174,7 +174,7 @@ The default label is also used when:
 - [x] Support nested relation fields in templates
 - [ ] Import and export relation-label settings
 - [ ] Conditional labels and configurable fallback rules
-- [ ] Support label transformation functions (e.g., `toUpperCase`, `toLowerCase`, `capitalize`, etc.)
+- [x] Support label transformation functions
 
 If you have any feature requests or suggestions, please open a dedicated issue.
 

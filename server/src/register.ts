@@ -59,6 +59,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
       await decorateConfiguration(ctx, ctx.params.uid);
     },
     async updateContentTypeConfiguration(ctx: any, next: any) {
+      ctx.request.body = relationLabels.sanitizeConfigurationUpdate(ctx.request.body);
       await controller.updateContentTypeConfiguration(ctx, next);
       await decorateConfiguration(ctx, ctx.params.uid);
     },

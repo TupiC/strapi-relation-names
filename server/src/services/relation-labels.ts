@@ -350,6 +350,46 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
     return next;
   };
 
+  const sanitizeConfigurationUpdate = (configuration: any) => {
+    if (!isRecord(configuration) || !isRecord(configuration.metadatas)) {
+      return configuration;
+    }
+
+    const configurationSettings = isRecord(configuration.settings) ? configuration.settings : {};
+    const relationNames = isRecord(configurationSettings.relationNames)
+      ? configurationSettings.relationNames
+      : {};
+    const { relationNames: _relationNames, ...sanitizedSettings } = configurationSettings;
+    const metadatas = { ...configuration.metadatas };
+
+    for (const [fieldName, metadata] of Object.entries(metadatas)) {
+      const relationName = relationNames[fieldName];
+      if (
+        !isRecord(relationName) ||
+        relationName.mainField !== 'label' ||
+        !isRecord(metadata) ||
+        !isRecord(metadata.edit) ||
+        metadata.edit.mainField !== 'label'
+      ) {
+        continue;
+      }
+
+      metadatas[fieldName] = {
+        ...metadata,
+        edit: {
+          ...metadata.edit,
+          mainField: 'id',
+        },
+        list: {
+          ...(isRecord(metadata.list) ? metadata.list : {}),
+          mainField: 'id',
+        },
+      };
+    }
+
+    return { ...configuration, settings: sanitizedSettings, metadatas };
+  };
+
   const decorateCollectionResults = async (ctx: any, sourceUid: string, results: unknown[]) => {
     const settings = await getSettings();
     if (!isCollectionEnabled(settings.collections, sourceUid)) {
@@ -435,6 +475,7 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
   return {
     decorateCollectionResults,
     decorateConfiguration: decorateContentManagerConfiguration,
+    sanitizeConfigurationUpdate,
     decorateRelationResults,
     compileTemplate,
     parseTemplate,
