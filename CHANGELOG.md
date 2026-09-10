@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/TupiC/strapi-relation-names/compare/v1.2.2...v1.3.0) (2026-09-10)
+
+
+### Features
+
+* **labels:** add toLocalDate and toLocalDateTime transformations ([21c391a](https://github.com/TupiC/strapi-relation-names/commit/21c391a6f61a5b5ff2a2074fd52032acbef807fa))
+
+
+### Bug Fixes
+
+* **content-manager:** allow saving labels with relation metadata ([1dd9c01](https://github.com/TupiC/strapi-relation-names/commit/1dd9c010f211cc73b1834d92a35186c068945fa0))
+
 ## [1.2.2](https://github.com/TupiC/strapi-relation-names/compare/v1.2.1...v1.2.2) (2026-09-08)
 
 ### Bug Fixes
