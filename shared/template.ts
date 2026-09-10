@@ -1,3 +1,7 @@
+import { isRecord } from './records';
+
+export { isRecord } from './records';
+
 export type TemplateAttribute = {
   type?: string;
   target?: string;
@@ -137,9 +141,6 @@ export const TRANSFORMS: Readonly<Record<string, TransformDefinition>> = {
       formatDate(value, { dateStyle: 'short', timeStyle: 'short' }, context, false),
   },
 };
-
-export const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 export const getPathValue = (value: unknown, path: string): unknown => {
   return path.split('.').reduce<unknown>((current, segment) => {

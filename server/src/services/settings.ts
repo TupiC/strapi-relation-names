@@ -1,13 +1,11 @@
 import type { Core } from '@strapi/strapi';
 
+import { isRecord } from '../../../shared/records';
+import { PLUGIN_ID } from '../constants';
 import { EMPTY_SETTINGS } from '../types';
 import type { RelationNamesSettings } from '../types';
 
-const PLUGIN_ID = 'strapi-relation-names';
 const STORE_KEY = 'settings';
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const normalizeSettings = (value: unknown, collections: string[] = []): RelationNamesSettings => {
   if (!isRecord(value) || !isRecord(value.relations)) {

@@ -67,32 +67,25 @@ After installing and enabling the plugin, open the Strapi Admin settings panel:
 
 Each relation field is displayed together with the scalar fields available on its related content type or component.
 
-Create a label using placeholders:
+Create a label using placeholders e.g.:
 
 ```text
 {firstName} {lastName}
 ```
 
-For example, given:
-
-```text
-firstName = John
-lastName = Doe
-```
-
-the relation will be displayed as:
-
-```text
-John Doe
-```
-
 You can also mix placeholders with static text:
 
 ```text
-{firstName} {lastName} ({customerNumber})
+Name: {firstName} {lastName}
 ```
 
-After saving the settings, the Strapi Admin reloads automatically so open Content Manager views use the updated labels.
+It is also possible to transform a label's value using pipe syntax:
+{createdAt | toLocalDateTime}
+
+Currently the following transformations exist:
+
+- `toLocalDate` — formats date values using the configured locale and time zone.
+- `toLocalDateTime` — formats date-time values using the configured locale and time zone.
 
 ---
 
@@ -100,9 +93,11 @@ After saving the settings, the Strapi Admin reloads automatically so open Conten
 
 Possible configuration keys are listed below; omitted keys keep the plugin defaults.
 
-| Key           | Description                                                                                     | Possible values |
-| ------------- | ----------------------------------------------------------------------------------------------- | --------------- |
-| `collections` | Limit relation names to the listed collection and single type UIDs. Leave empty to include all. | `string[]`      |
+| Key           | Description                                                                                     | Possible values                      |
+| ------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `collections` | Limit relation names to the listed collection and single type UIDs. Leave empty to include all. | `string[]` (default: `[]`)           |
+| `locale`      | Locale used by date transformations.                                                            | `string` (default: runtime locale)   |
+| `timeZone`    | IANA timezone used by date transformations.                                                     | `string` (default: runtime timezone) |
 
 Example:
 
@@ -112,30 +107,10 @@ Example:
   enabled: true,
   config: {
     collections: ['api::article.article', 'api::author.author'],
+    locale: 'de-AT',
+    timeZone: 'Europe/Vienna',
   },
 },
-```
-
----
-
-## ⚙️ Templates
-
-Multiple placeholders can be combined:
-
-```text
-{firstName} {lastName}
-```
-
-Placeholders can also be repeated:
-
-```text
-{name} - {name}
-```
-
-Static text can be included anywhere:
-
-```text
-Customer: {firstName} {lastName}
 ```
 
 ---

@@ -119,7 +119,7 @@ const SettingsPage = () => {
 
   const updateTemplate = (sourceUid: string, fieldName: string, template: string) => {
     setSettings((current) => {
-      const sourceRelations = { ...(current.relations[sourceUid] ?? {}) };
+      const sourceRelations = { ...current.relations[sourceUid] };
       if (template.length === 0) {
         delete sourceRelations[fieldName];
       } else {

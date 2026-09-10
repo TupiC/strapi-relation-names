@@ -1,3 +1,5 @@
+import { isRecord } from '../../../shared/records';
+
 type RelationNamesLayout = {
   settings?: {
     relationNames?: Record<string, { mainField?: string }>;
@@ -5,9 +7,6 @@ type RelationNamesLayout = {
   layout?: unknown;
   components?: Record<string, RelationNamesLayout>;
 };
-
-const isRecord = (value: unknown): value is Record<string, any> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const getMainFieldName = (layout: RelationNamesLayout, fieldName: string) =>
   layout.settings?.relationNames?.[fieldName]?.mainField;
