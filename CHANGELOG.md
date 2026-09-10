@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/TupiC/strapi-relation-names/compare/v1.3.0...v1.3.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* **config:** sanitize relation list metadata ([ff37689](https://github.com/TupiC/strapi-relation-names/commit/ff3768982706fac850e82bc183299e1fb6196a08))
+
 ## [1.3.0](https://github.com/TupiC/strapi-relation-names/compare/v1.2.2...v1.3.0) (2026-09-10)
 
 
