@@ -1,4 +1,5 @@
-import { isRecord, renderTemplate, type RelationRuntime } from './relation-labels';
+import { isRecord, renderTemplate } from '../../../../shared/template';
+import type { RelationRuntime } from './relation-labels';
 
 export const getIdentity = (value: Record<string, unknown>, modelType?: string): unknown =>
   modelType === 'component' ? value.id : (value.documentId ?? value.id);

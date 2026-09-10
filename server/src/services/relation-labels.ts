@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 
 import type { RelationNamesSettings } from '../types';
+import type { TransformContext } from '../../../shared/template';
 
 import {
   compileTemplate,
@@ -64,7 +65,8 @@ const getRuntime = async (
   settings: RelationNamesSettings,
   sourceUid: string,
   targetField: string,
-  userAbility: unknown
+  userAbility: unknown,
+  transformContext: TransformContext
 ): Promise<RelationRuntime | null> => {
   const sourceSchema = strapi.getModel(sourceUid as never) as unknown as SchemaLike | undefined;
   const attribute = sourceSchema?.attributes?.[targetField];
@@ -100,12 +102,24 @@ const getRuntime = async (
 
   return {
     ...compiled,
+    transformContext,
     displayField: compiled.placeholders.some((placeholder) => placeholder.includes('.'))
       ? originalMainField
       : compiled.displayField,
     sourceUid,
     targetUid: targetSchema.uid,
     originalMainField,
+  };
+};
+
+const getTransformContext = (strapi: Core.Strapi): TransformContext => {
+  const config = strapi.config.get('plugin::strapi-relation-names') as
+    | { locale?: unknown; timeZone?: unknown }
+    | undefined;
+
+  return {
+    locale: typeof config?.locale === 'string' ? config.locale : undefined,
+    timeZone: typeof config?.timeZone === 'string' ? config.timeZone : undefined,
   };
 };
 
@@ -228,7 +242,8 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
       settings,
       sourceUid,
       targetField,
-      ctx.state.userAbility
+      ctx.state.userAbility,
+      getTransformContext(strapi)
     );
     if (!runtime) {
       return results;
@@ -343,6 +358,7 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
 
     const runtimeCache = new Map<string, RelationRuntime | null>();
     const sourceSchemas = new Map<string, SchemaLike | undefined>();
+    const transformContext = getTransformContext(strapi);
 
     const getSchema = (uid: string) => {
       if (!sourceSchemas.has(uid)) {
@@ -369,7 +385,14 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
           if (!runtimeCache.has(cacheKey)) {
             runtimeCache.set(
               cacheKey,
-              await getRuntime(strapi, settings, uid, fieldName, ctx.state.userAbility)
+              await getRuntime(
+                strapi,
+                settings,
+                uid,
+                fieldName,
+                ctx.state.userAbility,
+                transformContext
+              )
             );
           }
           const runtime = runtimeCache.get(cacheKey);

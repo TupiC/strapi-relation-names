@@ -52,4 +52,11 @@ describe('template system fields', () => {
       'registrations.privateName'
     );
   });
+
+  it('validates date transformation pipelines', () => {
+    expect(validateTemplate('{createdAt | toLocalDate}', schema.attributes)).toBeNull();
+    expect(validateTemplate('{createdAt | toLocalDateTime}', schema.attributes)).toBeNull();
+    expect(validateTemplate('{name | toLocalDate}', schema.attributes)).toContain('toLocalDate');
+    expect(validateTemplate('{createdAt | unknown}', schema.attributes)).toContain('unknown');
+  });
 });

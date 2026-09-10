@@ -13,4 +13,17 @@ describe('plugin config', () => {
     expect(() => validateConfig({ collections: ['api::article.article', 1] })).toThrow();
     expect(() => validateConfig({ collections: 'api::article.article' })).toThrow();
   });
+
+  it('accepts locale and timezone formatting options', () => {
+    expect(() =>
+      validateConfig({
+        collections: [],
+        locale: 'en-US',
+        timeZone: 'Europe/Vienna',
+      })
+    ).not.toThrow();
+    expect(() => validateConfig({ collections: [], timeZone: 'invalid/timezone' })).toThrow(
+      'valid IANA timezone'
+    );
+  });
 });

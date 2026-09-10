@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { compileTemplate, parseTemplate, renderTemplate } from './relation-labels';
+import { parseTemplateAst } from '../../../../shared/template';
 
 const targetSchema = {
   uid: 'api::person.person',
@@ -55,6 +56,23 @@ describe('relation label templates', () => {
     ]);
   });
 
+  it('parses transformation pipelines into an AST', () => {
+    expect(parseTemplateAst('{firstName} — {createdAt | toLocalDate}')).toEqual({
+      tokens: [
+        { type: 'expression', expression: { path: 'firstName', transforms: [] } },
+        { type: 'text', value: ' — ' },
+        {
+          type: 'expression',
+          expression: { path: 'createdAt', transforms: ['toLocalDate'] },
+        },
+      ],
+      expressions: [
+        { path: 'firstName', transforms: [] },
+        { path: 'createdAt', transforms: ['toLocalDate'] },
+      ],
+    });
+  });
+
   it('renders scalar values and replaces missing values with empty strings', () => {
     const compiled = compileTemplate('{firstName} {lastName} #{age} {active}', targetSchema);
     expect(compiled).not.toBeNull();
@@ -84,6 +102,38 @@ describe('relation label templates', () => {
         status: 'published',
       })
     ).toBe('3 doc-3 2026-01-01 2026-01-02  en published');
+  });
+
+  it('formats date and datetime transformations with the supplied context', () => {
+    const compiled = compileTemplate(
+      '{createdAt | toLocalDate} / {createdAt | toLocalDateTime}',
+      targetSchema
+    );
+
+    expect(compiled).not.toBeNull();
+    expect(
+      renderTemplate(
+        compiled!,
+        { createdAt: '2026-01-02T15:04:00.000Z' },
+        { locale: 'en-US', timeZone: 'UTC' }
+      )
+    ).toBe('1/2/26 / 1/2/26, 3:04 PM');
+  });
+
+  it('preserves date-only values while formatting them', () => {
+    const compiled = compileTemplate('{publishedAt | toLocalDate}', targetSchema);
+
+    expect(compiled).not.toBeNull();
+    expect(
+      renderTemplate(
+        compiled!,
+        { publishedAt: '2026-01-02' },
+        {
+          locale: 'en-US',
+          timeZone: 'America/Los_Angeles',
+        }
+      )
+    ).toBe('1/2/26');
   });
 
   it('compiles and renders scalar fields nested in a component', () => {
@@ -139,6 +189,9 @@ describe('relation label templates', () => {
     ).toBeNull();
     expect(compileTemplate('Only static text', targetSchema)).toBeNull();
     expect(compileTemplate('{first-name}', targetSchema)).toBeNull();
+    expect(compileTemplate('{firstName | missingTransform}', targetSchema)).toBeNull();
+    expect(compileTemplate('{firstName | toLocalDate}', targetSchema)).toBeNull();
+    expect(compileTemplate('{createdAt | toLocalDateTime}', targetSchema)).not.toBeNull();
     expect(parseTemplate('{mainParticipant..firstName}')).toBeNull();
   });
 
