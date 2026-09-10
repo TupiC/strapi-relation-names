@@ -155,27 +155,24 @@ const relationLabels = ({ strapi }: { strapi: Core.Strapi }) => {
 
     for (const [fieldName, metadata] of Object.entries(metadatas)) {
       const relationName = relationNames[fieldName];
-      if (
-        !isRecord(relationName) ||
-        relationName.mainField !== 'label' ||
-        !isRecord(metadata) ||
-        !isRecord(metadata.edit) ||
-        metadata.edit.mainField !== 'label'
-      ) {
+      if (!isRecord(relationName) || !isRecord(metadata)) {
         continue;
       }
 
-      metadatas[fieldName] = {
-        ...metadata,
-        edit: {
-          ...metadata.edit,
-          mainField: 'id',
-        },
-        list: {
-          ...(isRecord(metadata.list) ? metadata.list : {}),
-          mainField: 'id',
-        },
-      };
+      const sanitizedMetadata = { ...metadata };
+      if (isRecord(metadata.list)) {
+        const { mainField: _mainField, ...sanitizedList } = metadata.list;
+        sanitizedMetadata.list = sanitizedList;
+      }
+      if (
+        relationName.mainField === 'label' &&
+        isRecord(metadata.edit) &&
+        metadata.edit.mainField === 'label'
+      ) {
+        sanitizedMetadata.edit = { ...metadata.edit, mainField: 'id' };
+      }
+
+      metadatas[fieldName] = sanitizedMetadata;
     }
 
     return { ...configuration, settings: sanitizedSettings, metadatas };

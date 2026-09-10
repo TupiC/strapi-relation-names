@@ -90,7 +90,7 @@ describe('relation labels configuration updates', () => {
       metadatas: {
         author: {
           edit: { label: 'Author', mainField: 'id' },
-          list: { label: 'Author', mainField: 'id' },
+          list: { label: 'Author' },
         },
       },
     });
